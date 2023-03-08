@@ -1,0 +1,22 @@
+[
+    {
+        "icon": "bx bx-error",
+        "content": "Update 2022"
+    },
+    {
+        "icon": "bx bx-package",
+        "content": "You have 2 messages"
+    },
+    {
+        "icon": "bx bx-cart",
+        "content": "Iskra Sceiz has purchased"
+    },
+    {
+        "icon": "bx bx-error",
+        "content": "New orders sent"
+    },
+    {
+        "icon": "bx bx-cart",
+        "content": "Iskra Sceiz made an order"
+    }
+]

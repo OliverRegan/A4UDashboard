@@ -1,0 +1,22 @@
+[
+    {
+        "display_name": "Current Audits",
+        "route": "/dashboard",
+        "icon": "bx bx-spreadsheet"
+    },
+    {
+        "display_name": "Select Accounts",
+        "route": "/accounts",
+        "icon": "bx bx-lock-alt"
+    },
+    {
+        "display_name": "Sampling",
+        "route": "/sampling",
+        "icon": "bx bx-dollar"
+    },
+    {
+        "display_name": "Search",
+        "route": "/search",
+        "icon": "bx bx-search"
+    }
+]
