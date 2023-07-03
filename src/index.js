@@ -32,16 +32,15 @@ const store = configureStore({
   },
 })
 
-console.log(process.env.REACT_APP_OIDC_URL);
 
 document.title = 'Admin'
 
 ReactDOM.render(
   <Provider store={store}>
     <React.StrictMode>
-      {/* <AuthProvider {...IDENTITY_CONFIG_OIDC} onSigninRedirectCallback={UserManager.onSigninRedirectCallback}> */}
-      <Layout />
-      {/* </AuthProvider > */}
+      <AuthProvider {...IDENTITY_CONFIG_OIDC} onSigninRedirectCallback={UserManager.onSigninRedirectCallback}>
+        <Layout />
+      </AuthProvider >
     </React.StrictMode>
   </Provider>,
   document.getElementById('root')

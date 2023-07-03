@@ -8,6 +8,7 @@ import Audits from '../pages/Audits'
 import Accounts from '../pages/Accounts'
 import Transactions from '../pages/Transactions'
 import Search from '../pages/Search'
+import RecurringTransactions from '../pages/RecurringTransactions'
 import { useEffect } from 'react';
 
 const Routes = (props) => {
@@ -40,8 +41,8 @@ const Routes = (props) => {
 
     return (
         <Switch>
-            <Route path='/menu' exact component={Dashboard} />
-            <Route path='/dashboard' exact component={() => <Audits
+            <Route index path='/dashboard' exact component={Dashboard} />
+            <Route path='/currentAudits' exact component={() => <Audits
                 audit={audit}
                 setAudit={setAudit}
                 fileName={fileName}
@@ -65,6 +66,11 @@ const Routes = (props) => {
                 />} />
             <Route path='/search' component={() =>
                 <Search
+                    audit={audit}
+                    fileUploaded={fileUploaded}
+                />} />
+            <Route path='/recurring-transactions' component={() =>
+                <RecurringTransactions
                     audit={audit}
                     fileUploaded={fileUploaded}
                 />} />

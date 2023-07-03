@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { FaCheck, FaTimes } from 'react-icons/fa'
 
 // Material UI
 import {
@@ -20,7 +19,7 @@ import Axios from 'axios';
 
 
 // Formik for searching
-import { Form, Formik, useFormik } from 'formik'
+import { Form, Formik } from 'formik'
 import values from '../components/utility/Formik/Search/DefaultValues'
 import validationSchema from '../components/utility/Formik/Search/validationSchema'
 
@@ -43,6 +42,11 @@ const Search = (props) => {
     const [startDate, setStartDate] = useState(null)
     const [endDateString, setEndDateString] = useState(null)
     const [startDateString, setStartDateString] = useState(null)
+    const [err, setErr] = useState(false)
+    const [dateErr, setDateErr] = useState('')
+
+    // For checking if search already done
+    const [alreadySearched, setAlreadySearched] = useState(false);
 
     // Transactions to be received
     const [transactions, setTransactions] = useState([])
@@ -63,20 +67,30 @@ const Search = (props) => {
             let dateString = (date.getUTCDate() + 1) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear()
             setEndDate(value)
             setEndDateString(dateString)
-            console.log(dateString)
+            setDateErr('');
+        } else if (value === null) {
+            setEndDate(value)
+            setEndDateString('')
+            setDateErr('');
+        } else {
+            return setDateErr('End date must be valid');
         }
     }
     async function handleStartDateChange(value) {
         // Check is valid
         if (dayjs(value).isValid()) {
             // Set date
-
-
             let date = new Date(value)
             let dateString = (date.getUTCDate() + 1) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear()
             setStartDate(value)
             setStartDateString(dateString)
-            console.log(dateString)
+            setDateErr('');
+        } else if (value === null) {
+            setEndDate(value)
+            setEndDateString('')
+            setDateErr('');
+        } else {
+            return setDateErr('Start date must be valid');
         }
     }
 
@@ -96,7 +110,6 @@ const Search = (props) => {
         }
         await Axios.post(searchURL, body)
             .then((response) => {
-                console.log(response)
 
                 setTransactions([])
                 let sampledTransactions = [];
@@ -104,16 +117,12 @@ const Search = (props) => {
                     sampledTransactions.push(response.data.transactions[i]);
                 }
                 setTransactions(() => sampledTransactions)
+                setAlreadySearched(true)
             })
             .catch((err) => {
-
+                setAlreadySearched(true)
             })
-
-
-        console.log(transactions, "sdsds")
-
     }
-
 
 
     const customerTableHead = [
@@ -126,6 +135,11 @@ const Search = (props) => {
         "Description",
         "Amount"
     ]
+
+    function dateErrorFunc() {
+        setDateErr('Date needs to be valid')
+        setTimeout(() => { setDateErr('') }, 3000)
+    }
 
     const renderHead = (item, index) => <th key={index}>{item}</th>
 
@@ -164,6 +178,25 @@ const Search = (props) => {
                                             <Box sx={{
                                                 mb: 2
                                             }}>
+                                                <Box sx={{
+                                                    color: 'red',
+                                                    width: 1,
+                                                    display: 'flex',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    {
+                                                        dateErr != '' ?
+                                                            <Typography>
+
+                                                                {dateErr}
+
+                                                            </Typography>
+                                                            :
+                                                            <></>
+                                                    }
+                                                </Box>
+
+
                                                 <InputLabel>Description</InputLabel>
                                                 <TextField
                                                     fullWidth
@@ -276,14 +309,37 @@ const Search = (props) => {
                                                 mt: 3,
                                                 gap: 3
                                             }}>
-                                                <Button variant='contained' color="success" sx={{
-                                                    width: 1 / 2
-                                                }}
+                                                <Button variant='contained' color="success"
+                                                    disabled={dateErr != ''}
+                                                    sx={{
+                                                        width: 1 / 2
+                                                    }}
                                                     onClick={() => {
                                                         // Set formik values from state -> needed to do this way while using the dayjs localization provider
-                                                        props.setFieldValue('startDate', dayjs(startDate).toString())
-                                                        props.setFieldValue('endDate', dayjs(endDate).toString())
-                                                        handleSearch(props.values)
+                                                        if (startDate != null && startDate != '' && dayjs(startDate).isValid()) {
+                                                            setDateErr('')
+                                                            props.setFieldValue('startDate', dayjs(startDate).toString())
+                                                        } else if (startDate === null) {
+                                                            // Do nothing
+                                                        } else {
+                                                            return dateErrorFunc()
+                                                        }
+                                                        if (endDate != null && endDate != '' && dayjs(endDate).isValid()) {
+                                                            setDateErr('')
+                                                            props.setFieldValue('endDate', dayjs(endDate).toString())
+
+                                                        } else if (endDate == null) {
+                                                            // Do nothing
+                                                        } else {
+                                                            return dateErrorFunc()
+                                                        }
+                                                        if (dateErr === '') {
+                                                            setErr(true)
+                                                            handleSearch(props.values)
+                                                        } else {
+                                                            setErr(false)
+                                                        }
+
                                                     }}
                                                 >Search</Button>
                                                 <Button variant='contained' color="error" sx={{
@@ -294,6 +350,8 @@ const Search = (props) => {
                                                         setStartDate(null)
                                                         setEndDateString(null)
                                                         setStartDateString(null)
+                                                        setAlreadySearched(false)
+                                                        setTransactions([])
                                                         props.handleReset()
                                                     }
                                                     }
@@ -328,11 +386,20 @@ const Search = (props) => {
 
                                     />
                                     :
-                                    <div className='my-20'>
-                                        <h2 className='text-center'>
-                                            Click search to show relevant transactions.
-                                        </h2>
-                                    </div>
+                                    (alreadySearched && transactions.length === 0 ?
+                                        <div className='my-20'>
+                                            <h2 className='text-center'>
+                                                Nothing matches your search criteria.
+                                            </h2>
+                                        </div>
+                                        :
+                                        <div className='my-20'>
+                                            <h2 className='text-center'>
+                                                Click search to show relevant transactions.
+                                            </h2>
+                                        </div>
+                                    )
+
                                 }
 
                             </div>

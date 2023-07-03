@@ -1,7 +1,9 @@
 {
   "name": "react-admin",
   "version": "0.1.0",
+  "homepage": "/dashboard",
   "private": true,
+  "proxy": "http://localhost:8080",
   "dependencies": {
     "@date-io/dayjs": "^2.16.0",
     "@emotion/react": "^11.10.5",
@@ -13,6 +15,7 @@
     "@mui/material": "^5.11.8",
     "@mui/styled-engine-sc": "^5.11.8",
     "@mui/x-data-grid": "^5.17.23",
+    "@mui/x-data-grid-pro": "^6.9.0",
     "@mui/x-date-pickers": "^5.0.13",
     "@reduxjs/toolkit": "^1.8.5",
     "@testing-library/jest-dom": "^5.14.1",

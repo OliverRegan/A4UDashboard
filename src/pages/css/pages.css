@@ -1,0 +1,4 @@
+.show-details-button:focus {
+    outline: none !important;
+    ;
+}
