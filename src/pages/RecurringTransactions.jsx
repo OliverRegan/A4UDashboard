@@ -92,6 +92,12 @@ const RecurringTransactions = (props) => {
             "RecurrencePeriod": recurrencePeriod,
 
         }
+        setEndDate(null)
+        setStartDate(null)
+        setEndDateString(null)
+        setStartDateString(null)
+        setAlreadySearched(false)
+        setTransactions([])
         Axios.post(searchURL, body)
             .then((response) => {
                 setTransactions([])
@@ -199,7 +205,6 @@ const RecurringTransactions = (props) => {
                     className='show-details-button'
                     onClick={() => {
                         setShowModal(true);
-                        console.log(transactions)
                         setDataObj(item)
                     }}
                 >
@@ -538,7 +543,7 @@ const RecurringTransactions = (props) => {
                                                 :
                                                 (alreadySearched && transactions.length === 0 && !loading ?
                                                     <div className='my-20'>
-                                                        <h2 className='text-center'>
+                                                        <h2 className='text-center text-red'>
                                                             Nothing matches your search criteria.
                                                         </h2>
                                                     </div>
