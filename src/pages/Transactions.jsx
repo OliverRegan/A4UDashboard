@@ -42,6 +42,13 @@ const renderBody = (item, index) => (
     </tr>
 )
 
+// Todo:
+/*
+- Formik for all form values
+- Save to redux state store
+- Load with useEffect
+- will chop this BIG component down to basically nothing lol -- ezpz
+*/
 
 
 const Transactions = (props) => {

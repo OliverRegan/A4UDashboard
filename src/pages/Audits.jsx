@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useDispatch, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../components/topnav/topnav.css';
-import Dropdown from '../components/dropdown/Dropdown';
-import ThemeMenu from '../components/thememenu/ThemeMenu';
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import Axios from 'axios';
 import Modal from 'react-modal';
-import ReactDOM from 'react-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faWindowClose as closeIcon } from '@fortawesome/free-solid-svg-icons'
-import { useHistory } from 'react-router-dom';
+import Uploader from '../components/uploader/Uploader';
+
+import { Formik, useFormik } from 'formik';
+import {
+    Button,
+    TextField
+} from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { setAudit } from '../redux/reducers/SaveAudit';
 
 const customStyles = {
     content: {
@@ -19,7 +20,7 @@ const customStyles = {
         bottom: 'auto',
         marginRight: '-50%',
         transform: 'translate(-50%, -50%)',
-        width: '20%',
+        width: '40%',
         height: '20%',
         borderRadius: '1em',
         border: 'none',
@@ -35,189 +36,146 @@ const customStyles = {
 };
 
 
-
-
-
 const Audits = (props) => {
 
     const [modalIsOpen, setIsOpen] = useState(false);
-    const [startDate, setStartDate] = useState(new Date());
-    const [message, setMessage] = useState(['', false]);
-    const [allowSubmit, setAllowSubmit] = useState();
-    const submitBtn = useRef();
-    const fileInput = useRef();
+    // const [startDate, setStartDate] = useState(new Date());
+    // const [message, setMessage] = useState(['', false]);
+    const [files, setFiles] = useState()
+    const [choice, setChoice] = useState();
 
-    let file = false;
-
-    // Tests to see if sheet is already uploaded
-    useEffect(() => {
-
-    }, [])
-
+    const dispatch = useDispatch()
+    const audit = useSelector((state) => state.SaveAudit)
 
     Modal.setAppElement('body');
 
-    const history = useHistory();
+    const formik = useFormik({
+        initialValues: {
+            auditName: audit.auditDetails?.auditName == '' ? audit.auditDetails.auditName : '',
+            clientName: audit.auditDetails?.clientName == '' ? audit.auditDetails.clientName : '',
+            financialYear: audit.auditDetails?.financialYear == '' ? audit.auditDetails.financialYear : '',
+        },
+        onSubmit: values => {
+            // Add data to redux store for current audit
+            dispatch(setAudit([audit.file, audit.accounts, values, audit.audit]))
 
-    function afterOpenModal() {
-        // references are now sync'd and can be accessed.
-        // subtitle.style.color = '#f00';
-    }
+        },
+    });
 
     function closeModal() {
         setIsOpen(false);
     }
 
-    // File handler
-    function fileHandler(event) {
-        props.setFile(null)
-        props.setAudit(null)
-        props.setFileUploaded(false)
-        props.setSampledTransactions([])
-        props.setSamples([0, 0])
-        props.setSelectedAccounts([])
-        props.setFileName(event.target.files[0].name);
-        props.setAudit(event.target.files[0]);
-        setAllowSubmit(() => true);
-        if (props.fileUploaded) {
-            props.setFileUploaded(false);
-        }
+    function handleUpload(data) {
+        dispatch(setAudit([files, JSON.parse(data)]))
     }
 
-    function testSubmit() {
-        // console.log(fileUploaded)
-        if (!props.fileUploaded) {
-            setIsOpen(true);
-        }
-
-        submit()
-        // .then(fileUploaded = submitResponse.status)
-        // .then(setError(() => submitResponse.message))
-        // .then(console.log(submitResponse))
+    const openModal = (callback) => {
+        setIsOpen(true)
+        setChoice(() => callback)
     }
-
-    // Pass file to API and get response
-    function submit() {
-        if (props.fileUploaded) {
-            return;
-        }
-        // Clear selected accounts
-        // Upload endpoint url
-        const auditUploadUrl = process.env.REACT_APP_BACKEND_URL + "/audit/excel"
-        // Assign form data - attach uploaded file
-        let formData = new FormData();
-        let file = props.audit.name;
-        formData.append('file', props.audit);
-        formData.append('filename', file)
-        const config = {
-            'Content-Type': 'multipart/form-data; boundary=-------arbritrary;"'
-        };
-
-
-        // Send file to back end and receive response
-        Axios.post(auditUploadUrl, formData)
-            .then((response) => {
-                props.setAudit(response.data);
-                props.setFileUploaded(true);
-                setIsOpen(false)
-
-            }
-            )
-            .catch((err) => {
-                setIsOpen(false);
-                console.log(err, formData)
-                setMessage([err.message, true])
+    function validateFileRemoval() {
+        return new Promise((resolve, reject) => {
+            openModal(userChoice => {
+                if (userChoice === true) {
+                    resolve(true);
+                } else {
+                    reject(false);
+                }
             })
-
-    }
-
-    function clear() {
-        props.setFileName('');
-        props.setAudit(null);
-        props.setFileUploaded(false);
-        props.setFile()
-        props.setAudit()
-        props.setFileUploaded(false)
-        props.setSampledTransactions([])
-        props.setSamples([0, 0])
-        props.setSelectedAccounts([])
-        setIsOpen(false);
-        setMessage(['', false]);
-        setAllowSubmit(false);
+        })
     }
 
     return (
-        <div id='main'>
-
-            <div class="grid w-full h-screen items-center justify-center bg-grey-lighter grid" className='form14'>
-                <h1>New Audit</h1><br /><br />
-                <p className="p1">Client Name</p><br />
-                <div className="topnav__search">
+        <div>
+            <div class=" w-full h-screen items-center justify-center bg-grey-lighter" className=''>
+                <div className="card">
+                    <div className="card__body">
+                        {/* {files === {} ? */}
+                        {files != {} ?
+                            <div>
+                                <div className='flex flex-col mx-auto w-1/2'>
+                                    <div classname="flex justify-around my-3">
+                                        <h1 className='text-center'>
+                                            {formik.values.auditName === '' ? "New Audit" : formik.values.auditName}
+                                        </h1>
+                                    </div>
+                                    <div className='flex justify-around my-3'>
+                                        <p className="p1">{formik.values.clientName === '' ? "Enter a client name" : formik.values.clientName}</p>
+                                        <p className="p1">{formik.values.financialYear === "" ? "Enter a financail year" : formik.values.financialYear}</p>
+                                    </div>
+                                </div>
+                                <form onSubmit={formik.handleSubmit}>
+                                    <div className='flex flex-col mx-auto w-1/2'>
+                                        <TextField
+                                            label="Audit Name"
+                                            variant='standard'
+                                            placeholder='Audit Name'
+                                            sx={{
+                                                my: "4px"
+                                            }}
+                                            id="auditName"
+                                            name="auditName"
+                                            type="text"
+                                            onChange={formik.handleChange}
+                                            value={formik.values.auditName}
+                                        />
+                                        <TextField
+                                            label="Client Name"
+                                            variant='standard'
+                                            placeholder='Client Name'
+                                            sx={{
+                                                my: "4px"
+                                            }}
+                                            id="clientName"
+                                            name="clientName"
+                                            type="text"
+                                            onChange={formik.handleChange}
+                                            value={formik.values.clientName}
+                                        />
+                                        <TextField
+                                            label="Financial Year"
+                                            placeholder='Financial Year'
+                                            variant='standard'
+                                            sx={{
+                                                my: "4px"
+                                            }}
+                                            id="financialYear"
+                                            name="financialYear"
+                                            type="text"
+                                            onChange={formik.handleChange}
+                                            value={formik.values.financialYear}
+                                        />
+                                        <Button
+                                            type='submit'
+                                            variant='contained'
+                                            sx={{
+                                                mt: '1rem',
+                                                width: 1 / 2,
+                                                mx: 'auto'
+                                            }}>Save Details</Button>
+                                    </div>
+                                </form>
+                            </div>
+                            :
+                            <div className='flex justify-center'>
+                                <p>
+                                    Please Upload a File First
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                {/* <div className="topnav__search">
                     <input type="text" placeholder='' />
                     <i className='bx bx-search'></i>
-                </div><br />
-                <p className="p1">Financial Year</p><br />
-                {/* <DatePicker className="date14" selected={startDate} onChange={(date: Date) => setStartDate(date)} /> */}
-
-                <div>
-                    <div className="flex flex-col w-full h-screen items-center justify-center bg-667080">
-                        {message[1] ?
-                            <div className="text-red my-3">Something went wrong: {message[0]}</div> :
-                            ""
-                        }
-
-                        <form onSubmit={submit} className="">
-                            <label className={" flex flex-col items-center px-4 py-6 bg-white text-#667080 rounded-lg shadow-lg tracking-wide uppercase border border-grey cursor-pointer hover:border-blue hover:bg-white hover:text-black " + (props.fileUploaded ? "bg-green hover:bg-green text-black border-green" : "") + (message[1] ? "bg-red hover:bg-red text-black border-red" : "")}>
-                                <svg className="w-8 h-8" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4-4-4 4h3v3h2v-3z" />
-                                </svg>
-                                <span className="mt-2 text-base leading-normal">{props.fileName != '' ? props.fileName : 'Select a file'}</span>
-                                <input type='file' className="hidden" name="file" onChange={fileHandler} ref={fileInput} />
-                            </label>
-                        </form>
-                        {
-                            (props.fileName != "" && !props.fileUploaded) ?
-                                <button className={('bg-blue hover:bg-green py-4 w-3/4 mt-5 rounded-lg text-white')} type='button' onClick={file ? '' : testSubmit}
-                                >
-                                    <p className=''>
-                                        Submit
-                                    </p>
-                                </button>
-                                :
-                                ""
-                        }
-
-                        {
-                            props.fileUploaded ?
-
-                                <button className='btn-blue py-4 mt-5 rounded-lg w-3/4' type='button' onClick={(e) => {
-                                    history.push("/accounts")
-                                }}>
-                                    <p className=''>
-                                        Select Accounts
-                                    </p>
-                                </button>
-
-                                :
-                                ""
-                        }
-                        {
-                            props.fileUploaded ?
-
-                                <button className='btn-grey py-4 mt-5 rounded-lg w-3/4' type='button' onClick={file ? '' : clear}>
-                                    <p className=''>
-                                        Clear Audits
-                                    </p>
-                                </button>
-
-                                :
-                                ""
-                        }
-
-                    </div>
-
-
-                </div>
+                </div><br /> */}
+                <Uploader
+                    setFiles={setFiles}
+                    clear={props.clear}
+                    validateFileRemoval={validateFileRemoval}
+                    handleUpload={handleUpload}
+                    setIsOpen={setIsOpen} />
                 <div className="topnav__right">
                     <div className="topnav__right-item">
                         {/*<Dropdown
@@ -230,15 +188,30 @@ const Audits = (props) => {
             </div>
             <Modal
                 isOpen={modalIsOpen}
-                onAfterOpen={afterOpenModal}
+                // onAfterOpen={afterOpenModal}
                 onRequestClose={closeModal}
                 style={customStyles}
                 contentLabel="Loading..."
                 shouldCloseOnOverlayClick={false}
             >
-                <div className='px-4 h-full flex flex-col justify-center'>
-                    <h2 className='text-center my-5'>Loading...</h2>
-                    <div className='text-center'>Please wait while we load your accounts.</div>
+                <div className='mx-auto px-4 h-full flex flex-col justify-center'>
+                    <div className='text-center'>Are you sure you want to remove your current audit?</div>
+                    <div className='w-3/4 flex mx-auto justify-around mt-10'>
+                        <Button
+                            onClick={() => choice(true)}
+                            variant="contained"
+                            color='error'
+                            sx={{
+                                width: 2 / 5,
+
+                            }}>Remove</Button>
+                        <Button onClick={() => choice(false)}
+                            variant="contained"
+                            color='primary'
+                            sx={{
+                                width: 2 / 5,
+                            }}>Cancel</Button>
+                    </div>
                 </div>
             </Modal>
         </div>
