@@ -67,11 +67,13 @@ const Routes = (props) => {
             <Route path='/search' component={() =>
                 <Search
                     audit={audit}
+                    selectedAccounts={selectedAccounts}
                     fileUploaded={fileUploaded}
                 />} />
             <Route path='/recurring-transactions' component={() =>
                 <RecurringTransactions
                     audit={audit}
+                    selectedAccounts={selectedAccounts}
                     fileUploaded={fileUploaded}
                 />} />
             <Route path='/sampling' component={() => <Transactions

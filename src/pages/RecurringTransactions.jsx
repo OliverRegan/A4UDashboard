@@ -62,6 +62,7 @@ const RecurringTransactions = (props) => {
 
 
     useEffect(() => {
+        console.log(props.audit)
         setRender(1)
         setRender(0)
     }, [transactions, endDate, startDate])
