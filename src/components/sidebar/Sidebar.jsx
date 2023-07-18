@@ -19,7 +19,6 @@ const user = {
 const SidebarItem = props => {
 
     const active = props.active ? 'active' : ''
-    console.log(props)
     return (
         <div className="sidebar__item">
             <div className={`sidebar__item-inner ${active}`}>
@@ -37,8 +36,14 @@ const Sidebar = props => {
 
     const activeItem = sidebar_items.findIndex(item => item.route === props.location.pathname)
 
-    const auth = useAuth();
-
+    // const auth = useAuth();
+    const auth = {
+        userData: {
+            profile: {
+                given_name: "Not Auth service"
+            }
+        }
+    }
 
     return (
         <div className='sidebar'>

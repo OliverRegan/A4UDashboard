@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { FaCheck, FaTimes } from 'react-icons/fa'
-
 // Material UI
 import { Typography, Box } from "@mui/material"
 
 import Table from '../components/table/Table'
 
-import customerList from '../assets/JsonData/customers-list.json'
+import { useSelector, useDispatch } from 'react-redux'
+
+import { Link } from 'react-router-dom/cjs/react-router-dom'
 
 const Accounts = (props) => {
 
     // Set variable for forcing rerender on selection of account
     const [render, setRender] = useState(0);
     const [population, setPopulation] = useState(0);
+
+    const audit = useSelector((state) => state.SaveAudit)
 
     useEffect(() => {
 
@@ -24,7 +27,7 @@ const Accounts = (props) => {
         })
 
         setPopulation(() => count)
-
+        console.log(audit.auditDetails)
     }, [])
     function handleRender(item) {
         // document.querySelector('.bx-dollar').click()
@@ -107,8 +110,6 @@ const Accounts = (props) => {
         }
 
     }
-
-
     const customerTableHead = [
         "Account Name",
         "Credit Transactions",
@@ -136,46 +137,65 @@ const Accounts = (props) => {
 
     return (
         <div {...render}>
+            <div className='row pb-5'>
+                <h2 className="page-header col-12">
+                    Select Accounts
+                </h2>
+                {Object.keys(audit.auditDetails).length === 0 ? <></>
+                    :
+                    <div className='row pl-5'>
+                        <div className='my-2 col-12'>
+                            <p>
+                                <span>{audit.auditDetails.clientName === undefined ? "Client Name" : audit.auditDetails.clientName}</span>
+                            </p>
+                        </div>
+                        <div className='my-2 col-12'>
+                            <p>
+                                <span>{audit.auditDetails.financialYear === undefined ? "Financial Year" : audit.auditDetails.financialYear}</span>
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
 
-            <h2 className="page-header">
-                Select Accounts
-            </h2>
-            <div className='mb-3 max-w-lg mx-auto'>
-                <div className="card">
-                    <div className="card__body">
-                        <div className="items-center justify-center">
-                            <div className='flex justify-around '>
-                                <div className='col-3 text-center'>
-                                    <p className='my-2'>Population: </p>
-                                    <span className='text-3xl font-bold'>${(population > 0 ? population : Math.abs(population)).toLocaleString()}</span><span className='font-bold'>{population != 0 ? population < 0 ? " CR" : " DR" : ""}</span>
+            <div className='row py-5'>
+                <div className='mb-3 col-12'>
+                    <div className="card">
+                        <div className="card__body">
+                            <div className="items-center justify-center">
+                                <div className='flex justify-around '>
+                                    <div className='col-3 text-center'>
+                                        <p className='my-2'>Population: </p>
+                                        <span className='text-3xl font-bold'>${(population > 0 ? population : Math.abs(population)).toLocaleString()}</span><span className='font-bold'>{population != 0 ? population < 0 ? " CR" : " DR" : ""}</span>
+                                    </div>
                                 </div>
                                 {population != 0 ?
-                                    <div className='py-2 px-4 text-center flex flex-column'>
-                                        <button className={"bg-red hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-3"} onClick={(e) => {
+                                    <div className='py-2 px-4 flex justify-around w-3/4 mx-auto'>
+                                        <button className={"bg-red hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-3 w-2/5"} onClick={(e) => {
                                             handleClear()
                                         }}>
                                             Clear selected
                                         </button>
-                                        <button className={"bg-green hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-3"} onClick={(e) => {
-                                            handleRender()
-                                        }}>
+                                        <Link
+                                            to="/sampling"
+                                            className={"bg-green hover:text-white text-center text-white font-bold py-2 px-4 rounded my-3 w-2/5"} >
                                             Sampling
-                                        </button>
+                                        </Link>
                                     </div>
                                     :
                                     <></>
                                 }
+                                {props.audit ?
+                                    <Box sx={{
+                                        mx: 'auto',
+                                        textAlign: 'center',
+                                        mt: 2
+                                    }}>
+                                        <Typography>Shift + click to select multiple accounts</Typography>
+                                    </Box>
+                                    : <></>
+                                }
                             </div>
-                            {props.fileUploaded ?
-                                <Box sx={{
-                                    mx: 'auto',
-                                    textAlign: 'center',
-                                    mt: 2
-                                }}>
-                                    <Typography>Shift + click to select multiple accounts</Typography>
-                                </Box>
-                                : <></>
-                            }
                         </div>
                     </div>
                 </div>
@@ -184,7 +204,7 @@ const Accounts = (props) => {
                 <div className="col-12">
                     <div className="card">
                         <div className="card__body">
-                            {props.fileUploaded ?
+                            {props.audit ?
                                 <Table
                                     // limit='10'
                                     headData={customerTableHead}

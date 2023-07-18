@@ -9,25 +9,19 @@ import Accounts from '../pages/Accounts'
 import Transactions from '../pages/Transactions'
 import Search from '../pages/Search'
 import RecurringTransactions from '../pages/RecurringTransactions'
-import { useEffect } from 'react';
 
 const Routes = (props) => {
     // Receiving audit states
     const [audit, setAudit] = useState();
 
-    const [fileName, setFileName] = useState('');
 
-    const [file, setFile] = useState();
+    const [files, setFiles] = useState()
 
+    const [test, setTest] = useState()
     const [err, setErr] = useState('');
-
-    const [fileUploaded, setFileUploaded] = useState(false);
 
     // Accounts select states
     const [selectedAccounts, setSelectedAccounts] = useState([]);
-
-    // Current selected transactions
-    const [selectedTransactions, setSelectedTransactions] = useState([]);
 
     // Sampled transactions
     const [sampledTransactions, setSampledTransactions] = useState([]);
@@ -38,22 +32,18 @@ const Routes = (props) => {
     // Last clicked for accounts
     const [lastClicked, setLastClicked] = useState(null);
 
+    function clear() {
+
+    }
 
     return (
         <Switch>
             <Route index path='/dashboard' exact component={Dashboard} />
-            <Route path='/currentAudits' exact component={() => <Audits
-                audit={audit}
+            <Route path='/currentAudits' component={() => <Audits
                 setAudit={setAudit}
-                fileName={fileName}
-                setFileName={setFileName}
-                setSelectedAccounts={setSelectedAccounts}
-                setSampledTransactions={setSampledTransactions}
-                setSamples={setSamples}
-                File={file}
-                setFile={setFile}
-                fileUploaded={fileUploaded}
-                setFileUploaded={setFileUploaded}
+                files={files}
+                setFiles={setFiles}
+                clear={clear}
             />} />
             <Route path='/customers' component={Customers} />
             <Route path='/accounts' component={() =>
@@ -62,19 +52,14 @@ const Routes = (props) => {
                     lastClicked={lastClicked}
                     setLastClicked={setLastClicked}
                     selectedAccounts={selectedAccounts} setSelectedAccounts={setSelectedAccounts}
-                    fileUploaded={fileUploaded}
                 />} />
             <Route path='/search' component={() =>
                 <Search
                     audit={audit}
-                    selectedAccounts={selectedAccounts}
-                    fileUploaded={fileUploaded}
                 />} />
             <Route path='/recurring-transactions' component={() =>
                 <RecurringTransactions
                     audit={audit}
-                    selectedAccounts={selectedAccounts}
-                    fileUploaded={fileUploaded}
                 />} />
             <Route path='/sampling' component={() => <Transactions
                 audit={audit}

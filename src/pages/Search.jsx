@@ -118,6 +118,7 @@ const Search = (props) => {
                 }
                 setTransactions(() => sampledTransactions)
                 setAlreadySearched(true)
+                console.log(props.audit)
             })
             .catch((err) => {
                 setAlreadySearched(true)

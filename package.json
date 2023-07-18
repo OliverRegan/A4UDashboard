@@ -28,6 +28,7 @@
     "bear-react-datepicker": "^1.0.12",
     "DatePicker": "^2.0.0",
     "dayjs": "^1.11.7",
+    "filepond": "^4.30.4",
     "formik": "^2.2.9",
     "fortawesome": "^0.0.1-security",
     "html2pdf.js": "^0.10.1",
@@ -40,6 +41,7 @@
     "react-date-picker": "^8.4.0",
     "react-datepicker": "^4.7.0",
     "react-dom": "^17.0.2",
+    "react-filepond": "^7.1.2",
     "react-icons": "^4.7.1",
     "react-json-to-excel": "^1.0.4",
     "react-modal": "^3.15.1",
@@ -51,6 +53,7 @@
     "styled-components": "^5.3.5",
     "textfield": "^1.0.4",
     "unique-filename": "^3.0.0",
+    "uppy": "^3.11.0",
     "web-vitals": "^1.1.2",
     "yup": "^1.0.2"
   },

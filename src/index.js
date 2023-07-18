@@ -6,6 +6,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import ThemeReducer from "./redux/reducers/ThemeReducer"
 import SaveSample from "./redux/reducers/SaveSample"
 import SeedCode from "./redux/reducers/SeedCode"
+import SaveAudit from './redux/reducers/SaveAudit';
 import { Provider } from 'react-redux'
 
 import rootReducer from './redux/reducers'
@@ -28,7 +29,8 @@ const store = configureStore({
   reducer: {
     ThemeReducer: ThemeReducer,
     SaveSample: SaveSample,
-    SeedCode: SeedCode
+    SeedCode: SeedCode,
+    SaveAudit: SaveAudit
   },
 })
 
@@ -38,9 +40,9 @@ document.title = 'Admin'
 ReactDOM.render(
   <Provider store={store}>
     <React.StrictMode>
-      <AuthProvider {...IDENTITY_CONFIG_OIDC} onSigninRedirectCallback={UserManager.onSigninRedirectCallback}>
-        <Layout />
-      </AuthProvider >
+      {/* <AuthProvider {...IDENTITY_CONFIG_OIDC} onSigninRedirectCallback={UserManager.onSigninRedirectCallback}> */}
+      <Layout />
+      {/* </AuthProvider > */}
     </React.StrictMode>
   </Provider>,
   document.getElementById('root')

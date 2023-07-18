@@ -35,7 +35,8 @@ const Layout = (props) => {
                     <Sidebar {...props} />
                     <div className="layout__content">
                         <TopNav />
-                        <div className="layout__content-main">
+                        {/* <div className="layout__content-main"> */}
+                        <div className='mx-5'>
                             <Routes />
                         </div>
                     </div>
