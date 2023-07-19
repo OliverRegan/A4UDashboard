@@ -7,7 +7,8 @@ import Uploader from '../components/uploader/Uploader';
 import { Formik, useFormik } from 'formik';
 import {
     Button,
-    TextField
+    TextField,
+    Typography
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAudit } from '../redux/reducers/SaveAudit';
@@ -51,13 +52,14 @@ const Audits = (props) => {
 
     const formik = useFormik({
         initialValues: {
-            auditName: audit.auditDetails?.auditName == '' ? audit.auditDetails.auditName : '',
-            clientName: audit.auditDetails?.clientName == '' ? audit.auditDetails.clientName : '',
-            financialYear: audit.auditDetails?.financialYear == '' ? audit.auditDetails.financialYear : '',
+            auditName: audit.auditDetails?.auditName != '' ? audit.auditDetails.auditName : '',
+            clientName: audit.auditDetails?.clientName != '' ? audit.auditDetails.clientName : '',
+            financialYear: audit.auditDetails?.financialYear != '' ? audit.auditDetails.financialYear : '',
         },
         onSubmit: values => {
+
             // Add data to redux store for current audit
-            dispatch(setAudit([audit.file, audit.accounts, values, audit.audit]))
+            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, ...values }]))
 
         },
     });
@@ -67,23 +69,67 @@ const Audits = (props) => {
     }
 
     function handleUpload(data) {
-        dispatch(setAudit([files, JSON.parse(data)]))
+        // ID's for MUI
+        let accounts = JSON.parse(data)
+        accounts.forEach((account) => {
+            account['id'] = accounts.indexOf(account)
+        })
+
+        // Pull needed file details
+        let fileData = {
+            fileName: files[0].file.name,
+            fileSize: files[0].file.size,
+        }
+
+
+        dispatch(setAudit([fileData, accounts, audit.auditDetails]))
     }
 
     const openModal = (callback) => {
         setIsOpen(true)
         setChoice(() => callback)
     }
-    function validateFileRemoval() {
+    async function checkRemove() {
         return new Promise((resolve, reject) => {
             openModal(userChoice => {
                 if (userChoice === true) {
+                    setIsOpen(false);
                     resolve(true);
                 } else {
+                    setIsOpen(false);
                     reject(false);
                 }
             })
         })
+    }
+    async function validateFileRemoval() {
+        return await checkRemove() ? dispatch(setAudit([{ fileName: '', fileSize: '' }, audit.accounts, audit.auditDetails])) : ''
+    }
+    async function validateAuditRemoval() {
+        return await checkRemove() ? dispatch(setAudit([
+            {
+                fileName: '',
+                fileSize: ''
+            },
+            [],
+            {
+                auditName: "",
+                clientName: "",
+                financialYear: "",
+                selectedAccounts: [],
+                sampledTransactions: [],
+                searchedTransactions: [],
+                recurringTransactions: []
+            }])) : ''
+    }
+
+    function formatBytes(bytes, decimals) {
+        if (bytes == 0) return '0 Bytes';
+        var k = 1024,
+            dm = decimals || 2,
+            sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+            i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
     return (
@@ -97,12 +143,16 @@ const Audits = (props) => {
                                 <div className='flex flex-col mx-auto w-1/2'>
                                     <div classname="flex justify-around my-3">
                                         <h1 className='text-center'>
-                                            {formik.values.auditName === '' ? "New Audit" : formik.values.auditName}
+                                            {audit.auditDetails.auditName === '' ? "New Audit" : audit.auditDetails.auditName}
                                         </h1>
                                     </div>
                                     <div className='flex justify-around my-3'>
-                                        <p className="p1">{formik.values.clientName === '' ? "Enter a client name" : formik.values.clientName}</p>
-                                        <p className="p1">{formik.values.financialYear === "" ? "Enter a financail year" : formik.values.financialYear}</p>
+                                        <div className='w-1/2 text-center'>
+                                            <p className="p1 mx-auto">{audit.auditDetails.clientName === '' ? "Enter a client name" : audit.auditDetails.clientName}</p>
+                                        </div>
+                                        <div className='w-1/2 text-center'>
+                                            <p className="p1 mx-auto">{audit.auditDetails.financialYear === "" ? "Enter a financial year" : audit.auditDetails.financialYear}</p>
+                                        </div>
                                     </div>
                                 </div>
                                 <form onSubmit={formik.handleSubmit}>
@@ -166,16 +216,43 @@ const Audits = (props) => {
                         }
                     </div>
                 </div>
-                {/* <div className="topnav__search">
-                    <input type="text" placeholder='' />
-                    <i className='bx bx-search'></i>
-                </div><br /> */}
-                <Uploader
-                    setFiles={setFiles}
-                    clear={props.clear}
-                    validateFileRemoval={validateFileRemoval}
-                    handleUpload={handleUpload}
-                    setIsOpen={setIsOpen} />
+                {audit.file.fileName === "" ?
+                    <Uploader
+                        setFiles={setFiles}
+                        clear={props.clear}
+                        // validateFileRemoval={validateFileRemoval}
+                        handleUpload={handleUpload}
+                        setIsOpen={setIsOpen} />
+                    :
+                    <div className='card'>
+                        <div className='card-body '>
+                            <div className='w-100 text-center mb-8'>
+                                <h2>Uploaded File</h2>
+                            </div>
+                            <div className='w-1/2 flex justify-around mx-auto'>
+                                <div className='text-center w-1/2'>
+                                    <h4 className='my-2'>File Name:</h4>
+                                    <p>{audit.file.fileName}</p>
+                                </div>
+                                <div className='text-center w-1/2'>
+                                    <h4 className='my-2'>File Size</h4>
+                                    <p>{formatBytes(audit.file.fileSize, 0)}</p>
+                                </div>
+                            </div>
+                            <div className=' flex justify-center'>
+                                <Button
+                                    onClick={validateFileRemoval}
+                                    // onClick={}
+                                    variant="contained"
+                                    color='error'
+                                    sx={{
+                                        width: 1 / 4,
+                                        mt: 4
+                                    }}>Clear File</Button>
+                            </div>
+
+                        </div>
+                    </div>}
                 <div className="topnav__right">
                     <div className="topnav__right-item">
                         {/*<Dropdown

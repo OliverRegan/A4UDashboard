@@ -3,9 +3,20 @@ import { createSlice } from "@reduxjs/toolkit"
 export const saveAudit = createSlice({
     name: 'saveAudit',
     initialState: {
-        file: {},
+        file: {
+            fileName: "",
+            fileSize: "",
+        },
         accounts: [],
-        auditDetails: {}
+        auditDetails: {
+            auditName: "",
+            clientName: "",
+            financialYear: "",
+            selectedAccounts: [],
+            sampledTransactions: [],
+            searchedTransactions: [],
+            recurringTransactions: []
+        }
     },
     reducers: {
         setAudit: (state, action) => {
