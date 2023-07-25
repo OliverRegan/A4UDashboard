@@ -12,8 +12,19 @@ export const saveAudit = createSlice({
             auditName: "",
             clientName: "",
             financialYear: "",
-            selectedAccounts: [],
-            sampledTransactions: [],
+            accounts: {
+                population: '',
+                selectedAccounts: [],
+            },
+            sampling: {
+                sampledTransactions: [],
+                credit: '',
+                debit: '',
+                materiality: '',
+                seed: '',
+                interval: '',
+                percentage: ''
+            },
             searchedTransactions: [],
             recurringTransactions: []
         }

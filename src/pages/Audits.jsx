@@ -27,11 +27,8 @@ const customStyles = {
         border: 'none',
         background: "#333",
         color: '#efefef'
-
-
     },
     overlay: {
-
         background: 'rgba(0, 0, 0, 0.92)'
     }
 };
@@ -40,8 +37,6 @@ const customStyles = {
 const Audits = (props) => {
 
     const [modalIsOpen, setIsOpen] = useState(false);
-    // const [startDate, setStartDate] = useState(new Date());
-    // const [message, setMessage] = useState(['', false]);
     const [files, setFiles] = useState()
     const [choice, setChoice] = useState();
 
@@ -57,10 +52,8 @@ const Audits = (props) => {
             financialYear: audit.auditDetails?.financialYear != '' ? audit.auditDetails.financialYear : '',
         },
         onSubmit: values => {
-
             // Add data to redux store for current audit
             dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, ...values }]))
-
         },
     });
 
@@ -159,7 +152,8 @@ const Audits = (props) => {
                                     <div className='flex flex-col mx-auto w-1/2'>
                                         <TextField
                                             label="Audit Name"
-                                            variant='standard'
+                                            variant='filled'
+                                            size='small'
                                             placeholder='Audit Name'
                                             sx={{
                                                 my: "4px"
@@ -172,7 +166,8 @@ const Audits = (props) => {
                                         />
                                         <TextField
                                             label="Client Name"
-                                            variant='standard'
+                                            variant='filled'
+                                            size='small'
                                             placeholder='Client Name'
                                             sx={{
                                                 my: "4px"
@@ -186,7 +181,8 @@ const Audits = (props) => {
                                         <TextField
                                             label="Financial Year"
                                             placeholder='Financial Year'
-                                            variant='standard'
+                                            variant='filled'
+                                            size='small'
                                             sx={{
                                                 my: "4px"
                                             }}
@@ -220,7 +216,6 @@ const Audits = (props) => {
                     <Uploader
                         setFiles={setFiles}
                         clear={props.clear}
-                        // validateFileRemoval={validateFileRemoval}
                         handleUpload={handleUpload}
                         setIsOpen={setIsOpen} />
                     :

@@ -33,7 +33,7 @@ const columns = [
 const Accounts = (props) => {
 
     // Set variable for forcing rerender on selection of account
-    const [population, setPopulation] = useState(0);
+    // const [population, setPopulation] = useState(0);
     const [selectionModel, setSelectionModel] = useState()
 
     const audit = useSelector((state) => state.SaveAudit)
@@ -41,13 +41,19 @@ const Accounts = (props) => {
 
     useEffect(() => {
         let count = 0;
-        audit.auditDetails.selectedAccounts.map((acc) => {
+        audit.auditDetails.accounts.selectedAccounts.map((acc) => {
             count += (parseInt(acc.totalDebit) - parseInt(acc.totalCredit))
 
         })
-        setPopulation(() => count)
-        console.log(audit)
-    }, [audit])
+        // setPopulation(() => count)
+        dispatch(setAudit([audit.file, audit.accounts, {
+            ...audit.auditDetails,
+            accounts: {
+                ...audit.auditDetails.accounts,
+                population: count
+            }
+        }]))
+    }, [audit.auditDetails.accounts.selectedAccounts])
 
     return (
         <div>
@@ -102,7 +108,7 @@ const Accounts = (props) => {
                 <div className='mb-3 col-12'>
                     <div className='row justify-end'>
                         <div className=' py-2 px-4 flex min-h-15 justify-items-end'>
-                            {audit.auditDetails.selectedAccounts.length != 0 ?
+                            {audit.auditDetails.accounts.selectedAccounts.length != 0 ?
                                 <Link
                                     to="/sampling"
                                     className={"h-10 text-center font-bold px-4 rounded w-100 hover:text-light-blue text-blue"} >
@@ -121,7 +127,7 @@ const Accounts = (props) => {
                                 <div className='flex justify-around '>
                                     <div className='col-10 text-center'>
                                         <p className='my-2'>Population: </p>
-                                        <span className='text-3xl font-bold'>${(population > 0 ? population : Math.abs(population)).toLocaleString()}</span><span className='font-bold'>{population != 0 ? population < 0 ? " CR" : " DR" : ""}</span>
+                                        <span className='text-3xl font-bold'>${(!audit.auditDetails.accounts.population > 0 ? audit.auditDetails.accounts.population : Math.abs(audit.auditDetails.accounts.population)).toLocaleString()}</span><span className='font-bold'>{audit.auditDetails.accounts.population != 0 ? audit.auditDetails.accounts.population < 0 ? " CR" : " DR" : ""}</span>
                                     </div>
                                 </div>
                             </div>
@@ -135,7 +141,7 @@ const Accounts = (props) => {
                         <div className="card__body">
                             {audit.accounts.length != 0 ?
                                 <div>
-                                    <div className='w-100 h-'>
+                                    <div className='w-100'>
                                         <DataGrid
                                             rows={audit.accounts}
                                             getRowId={(row) => audit.accounts.indexOf(row)}
@@ -144,9 +150,17 @@ const Accounts = (props) => {
                                             checkboxSelection
                                             onSelectionModelChange={(ids) => {
                                                 const selectedRowsData = ids.map((id) => audit.accounts.find((row) => row.id === id));
-                                                dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, selectedAccounts: selectedRowsData }]))
+                                                accounts: {
+                                                    dispatch(setAudit([audit.file, audit.accounts, {
+                                                        ...audit.auditDetails,
+                                                        accounts: {
+                                                            ...audit.auditDetails.accounts,
+                                                            selectedAccounts: selectedRowsData
+                                                        }
+                                                    }]))
+                                                }
                                             }}
-                                            selectionModel={audit.auditDetails.selectedAccounts.map((row) => row.id)}
+                                            selectionModel={audit.auditDetails.accounts.selectedAccounts.map((row) => row.id)}
                                             pageSize={100}
                                         />
                                     </div>
