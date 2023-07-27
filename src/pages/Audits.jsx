@@ -135,16 +135,16 @@ const Audits = (props) => {
                             <div>
                                 <div className='flex flex-col mx-auto w-1/2'>
                                     <div classname="flex justify-around my-3">
-                                        <h1 className='text-center'>
+                                        <h1 className='text-center text-2xl'>
                                             {audit.auditDetails.auditName === '' ? "New Audit" : audit.auditDetails.auditName}
                                         </h1>
                                     </div>
                                     <div className='flex justify-around my-3'>
                                         <div className='w-1/2 text-center'>
-                                            <p className="p1 mx-auto">{audit.auditDetails.clientName === '' ? "Enter a client name" : audit.auditDetails.clientName}</p>
+                                            <p className="p1 mx-auto text-xl">{audit.auditDetails.clientName === '' ? "Enter a client name" : audit.auditDetails.clientName}</p>
                                         </div>
                                         <div className='w-1/2 text-center'>
-                                            <p className="p1 mx-auto">{audit.auditDetails.financialYear === "" ? "Enter a financial year" : audit.auditDetails.financialYear}</p>
+                                            <p className="p1 mx-auto text-xl">{audit.auditDetails.financialYear === "" ? "Enter a financial year" : audit.auditDetails.financialYear}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -222,15 +222,15 @@ const Audits = (props) => {
                     <div className='card'>
                         <div className='card-body '>
                             <div className='w-100 text-center mb-8'>
-                                <h2>Uploaded File</h2>
+                                <h2 className='text-2xl'>Uploaded File</h2>
                             </div>
                             <div className='w-1/2 flex justify-around mx-auto'>
                                 <div className='text-center w-1/2'>
-                                    <h4 className='my-2'>File Name:</h4>
+                                    <h4 className='my-2 text-xl'>File Name:</h4>
                                     <p>{audit.file.fileName}</p>
                                 </div>
                                 <div className='text-center w-1/2'>
-                                    <h4 className='my-2'>File Size</h4>
+                                    <h4 className='my-2 text-xl'>File Size</h4>
                                     <p>{formatBytes(audit.file.fileSize, 0)}</p>
                                 </div>
                             </div>

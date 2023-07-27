@@ -15,15 +15,19 @@ export const saveAudit = createSlice({
             accounts: {
                 population: '',
                 selectedAccounts: [],
+                transactionNum: '',
+                creditAmount: '',
+                debitAmount: ''
             },
             sampling: {
                 sampledTransactions: [],
                 credit: '',
                 debit: '',
                 materiality: '',
+                seedInput: '',
                 seed: '',
-                interval: '',
-                percentage: ''
+                sampleInterval: '',
+                samplePercentage: ''
             },
             searchedTransactions: [],
             recurringTransactions: []
