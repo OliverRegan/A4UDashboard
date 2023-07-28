@@ -10,29 +10,22 @@ import {
 } from "@mui/material"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DesktopDatePicker, LocalizationProvider } from '@mui/x-date-pickers'
-
-import dayjs from 'dayjs';
-
+import dayjs, { Dayjs } from 'dayjs';
 import Table from '../components/table/Table'
-
 import Axios from 'axios';
-
-
+import { useSelector, useDispatch } from 'react-redux';
 // Formik for searching
-import { Form, Formik } from 'formik'
+import { Form, Formik, useFormik } from 'formik'
 import values from '../components/utility/Formik/Search/DefaultValues'
 import validationSchema from '../components/utility/Formik/Search/validationSchema'
+import { setAudit } from '../redux/reducers/SaveAudit';
 
 
 const Search = (props) => {
 
-    // Set variable for forcing rerender on selection of account
-    const [render, setRender] = useState(0); // Check
-
-
-    // Search array for resultint transactions
-    const [search, setSearch] = useState([])
-
+    const audit = useSelector((state) => state.SaveAudit)
+    const dispatch = useDispatch()
+    const [isLoading, setIsLoading] = useState(false)
 
     // URL
     const searchURL = process.env.REACT_APP_BACKEND_URL + "/audit/search"
@@ -51,78 +44,101 @@ const Search = (props) => {
     // Transactions to be received
     const [transactions, setTransactions] = useState([])
 
+    const formik = useFormik({
+        initialValues: {
+            minAmount: audit.auditDetails?.search.minAmount != '' ? audit.auditDetails.search.minAmount : '',
+            maxAmount: audit.auditDetails?.search.maxAmount != '' ? audit.auditDetails.search.maxAmount : '',
+            startDate: audit.auditDetails?.search.startDate != '' ? audit.auditDetails.search.startDate : null,
+            endDate: audit.auditDetails?.search.endDate != '' ? audit.auditDetails.search.endDate : null,
+            startDateVal: audit.auditDetails?.search.startDateVal != '' ? audit.auditDetails.search.startDateVal : null,
+            endDateVal: audit.auditDetails?.search.endDateVal != '' ? audit.auditDetails.search.endDateVal : null,
+            description: audit.auditDetails?.search.description != '' ? audit.auditDetails.search.description : '',
 
-    useEffect(() => {
+        },
+        onSubmit: values => {
+            setIsLoading(true);
+            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, ...values } }]))
+            let body = {
 
-    }, [])
+                "BankAccounts": audit.auditDetails.accounts.selectedAccounts,
+                "Description": values.description,
+                "StartDate": values.startDate,
+                "EndDate": values.endDate,
+                "StartAmount": values.minAmount === '' ? 0 : values.minAmount,
+                "EndAmount": values.maxAmount === '' ? 0 : values.maxAmount,
 
+            }
+            Axios.post(searchURL, body)
+                .then((response) => {
+                    console.log(response)
+                    setTransactions([])
+                    let sampledTransactions = [];
+                    for (let i = 0; i < response.data.transactions.length; i++) {
+                        sampledTransactions.push(response.data.transactions[i]);
+                    }
+                    setTransactions(() => sampledTransactions)
+                    setAlreadySearched(true)
+                    console.log(props.audit)
+                })
+                .catch((err) => {
+                    setAlreadySearched(true)
+                    console.log(err)
+                })
+        }
+    })
 
-    async function handleEndDateChange(value) {
+    async function handleEndDateChange(formik, value) {
         // Check is valid
         if (dayjs(value).isValid()) {
             // Set date
-            console.log('hei')
-
             let date = new Date(value)
             let dateString = (date.getUTCDate() + 1) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear()
-            setEndDate(value)
-            setEndDateString(dateString)
+            formik.setFieldValue('endDate', dateString)
+            formik.setFieldValue('endDateVal', value)
             setDateErr('');
         } else if (value === null) {
-            setEndDate(value)
-            setEndDateString('')
+            formik.setFieldValue('endDate', '')
+            formik.setFieldValue('endDateVal', value)
             setDateErr('');
         } else {
             return setDateErr('End date must be valid');
         }
     }
-    async function handleStartDateChange(value) {
+    async function handleStartDateChange(formik, value) {
+        console.log(value, formik)
         // Check is valid
         if (dayjs(value).isValid()) {
             // Set date
             let date = new Date(value)
             let dateString = (date.getUTCDate() + 1) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear()
-            setStartDate(value)
-            setStartDateString(dateString)
+            formik.setFieldValue('startDate', dateString)
+            formik.setFieldValue('startDateVal', value)
             setDateErr('');
         } else if (value === null) {
-            setEndDate(value)
-            setEndDateString('')
+            formik.setFieldValue('startDate', '')
+            formik.setFieldValue('startDateVal', value)
             setDateErr('');
         } else {
             return setDateErr('Start date must be valid');
         }
     }
-
-    async function handleSearch(formikValues) {
-
-
-
-        let body = {
-
-            "BankAccounts": props.audit,
-            "Description": formikValues.description,
-            "StartDate": startDateString != null ? startDateString : '',
-            "EndDate": endDateString != null ? endDateString : '',
-            "StartAmount": formikValues.startAmount === '' ? 0 : formikValues.startAmount,
-            "EndAmount": formikValues.endAmount === '' ? 0 : formikValues.endAmount,
-
-        }
-        await Axios.post(searchURL, body)
-            .then((response) => {
-
-                setTransactions([])
-                let sampledTransactions = [];
-                for (let i = 0; i < response.data.transactions.length; i++) {
-                    sampledTransactions.push(response.data.transactions[i]);
-                }
-                setTransactions(() => sampledTransactions)
-                setAlreadySearched(true)
-                console.log(props.audit)
-            })
-            .catch((err) => {
-                setAlreadySearched(true)
-            })
+    function clearSearch() {
+        setEndDate(null)
+        setStartDate(null)
+        setEndDateString(null)
+        setStartDateString(null)
+        setAlreadySearched(false)
+        setTransactions([])
+        dispatch(setAudit([audit.file, audit.accounts, {
+            ...audit.auditDetails,
+            search: {
+                searchedTransactions: [],
+                minAmount: '',
+                maxAmount: '',
+                startDate: '',
+                endDate: '',
+            }
+        }]))
     }
 
 
@@ -159,7 +175,7 @@ const Search = (props) => {
     )
 
     return (
-        <div {...render}>
+        <div>
 
             <h2 className="page-header">
                 Search Transactions
@@ -168,11 +184,11 @@ const Search = (props) => {
                 <div className="card">
                     <div className="card__body">
                         <div className="items-center justify-center">
-                            {props.audit != null ?
+                            {audit.auditDetails.accounts.selectedAccounts.length != 0 ?
                                 <Formik
                                     initialValues={values}
-                                    onSubmit={(values, actions) => { }}
-                                    validationSchema={validationSchema}
+                                    onSubmit={formik.handleSubmit}
+                                // validationSchema={validationSchema}
                                 >
                                     {props => (
                                         <Form>
@@ -233,8 +249,8 @@ const Search = (props) => {
                                                             <DesktopDatePicker
                                                                 inputFormat="DD/MM/YYYY"
                                                                 name="startDate"
-                                                                onChange={handleStartDateChange}
-                                                                value={startDate}
+                                                                onChange={(val) => handleStartDateChange(props, val)}
+                                                                value={props.values.startDateVal}
                                                                 renderInput={(params) => <TextField
                                                                     {...params}
                                                                     size="small"
@@ -249,8 +265,8 @@ const Search = (props) => {
                                                             <DesktopDatePicker
                                                                 inputFormat="DD/MM/YYYY"
                                                                 name="endDate"
-                                                                onChange={handleEndDateChange}
-                                                                value={endDate}
+                                                                onChange={(val) => handleEndDateChange(props, val)}
+                                                                value={props.values.endDateVal}
                                                                 renderInput={(params) => <TextField
                                                                     {...params}
                                                                     size="small"
@@ -275,11 +291,11 @@ const Search = (props) => {
                                                         <TextField
                                                             fullWidth
                                                             placeholder="Minimum amount of transaction"
-                                                            name="startAmount"
+                                                            name="minAmount"
                                                             variant="outlined"
                                                             size='small'
                                                             type={"number"}
-                                                            value={props.values.startAmount}
+                                                            value={props.values.minAmount}
                                                             onChange={props.handleChange}
                                                         />
                                                     </Box>
@@ -290,12 +306,12 @@ const Search = (props) => {
                                                         <InputLabel>Maximum Amount</InputLabel>
                                                         <TextField
                                                             fullWidth
-                                                            name="endAmount"
+                                                            name="maxAmount"
                                                             placeholder="Maximum amount of transaction"
                                                             variant="outlined"
                                                             size='small'
                                                             type={"number"}
-                                                            value={props.values.endAmount}
+                                                            value={props.values.maxAmount}
                                                             onChange={props.handleChange}
                                                         />
 
@@ -315,44 +331,40 @@ const Search = (props) => {
                                                     sx={{
                                                         width: 1 / 2
                                                     }}
-                                                    onClick={() => {
-                                                        // Set formik values from state -> needed to do this way while using the dayjs localization provider
-                                                        if (startDate != null && startDate != '' && dayjs(startDate).isValid()) {
-                                                            setDateErr('')
-                                                            props.setFieldValue('startDate', dayjs(startDate).toString())
-                                                        } else if (startDate === null) {
-                                                            // Do nothing
-                                                        } else {
-                                                            return dateErrorFunc()
-                                                        }
-                                                        if (endDate != null && endDate != '' && dayjs(endDate).isValid()) {
-                                                            setDateErr('')
-                                                            props.setFieldValue('endDate', dayjs(endDate).toString())
+                                                    type='submit'
+                                                // onClick={() => {
+                                                //     // Set formik values from state -> needed to do this way while using the dayjs localization provider
+                                                //     if (startDate != null && startDate != '' && dayjs(startDate).isValid()) {
+                                                //         setDateErr('')
+                                                //         props.setFieldValue('startDate', dayjs(startDate).toString())
+                                                //     } else if (startDate === null) {
+                                                //         // Do nothing
+                                                //     } else {
+                                                //         return dateErrorFunc()
+                                                //     }
+                                                //     if (endDate != null && endDate != '' && dayjs(endDate).isValid()) {
+                                                //         setDateErr('')
+                                                //         props.setFieldValue('endDate', dayjs(endDate).toString())
 
-                                                        } else if (endDate == null) {
-                                                            // Do nothing
-                                                        } else {
-                                                            return dateErrorFunc()
-                                                        }
-                                                        if (dateErr === '') {
-                                                            setErr(true)
-                                                            handleSearch(props.values)
-                                                        } else {
-                                                            setErr(false)
-                                                        }
+                                                //     } else if (endDate == null) {
+                                                //         // Do nothing
+                                                //     } else {
+                                                //         return dateErrorFunc()
+                                                //     }
+                                                //     if (dateErr === '') {
+                                                //         setErr(true)
+                                                //         handleSearch(props.values)
+                                                //     } else {
+                                                //         setErr(false)
+                                                //     }
 
-                                                    }}
+                                                // }}
                                                 >Search</Button>
                                                 <Button variant='contained' color="error" sx={{
                                                     width: 1 / 2
                                                 }}
                                                     onClick={() => {
-                                                        setEndDate(null)
-                                                        setStartDate(null)
-                                                        setEndDateString(null)
-                                                        setStartDateString(null)
-                                                        setAlreadySearched(false)
-                                                        setTransactions([])
+                                                        clearSearch()
                                                         props.handleReset()
                                                     }
                                                     }
@@ -372,12 +384,12 @@ const Search = (props) => {
                     </div>
                 </div>
             </div>
-            {props.audit != null ?
+            {audit.auditDetails.search != null ?
                 <div className="row">
                     <div className="col-12">
                         <div className="card">
                             <div className="card__body">
-                                {transactions.length != 0 ?
+                                {audit.auditDetails.search.searchedTransactions.length != 0 ?
                                     <Table
                                         // limit='10'
                                         headData={customerTableHead}
@@ -387,7 +399,7 @@ const Search = (props) => {
 
                                     />
                                     :
-                                    (alreadySearched && transactions.length === 0 ?
+                                    (alreadySearched && audit.auditDetails.search.searchedTransactions.length === 0 ?
                                         <div className='my-20'>
                                             <h2 className='text-center'>
                                                 Nothing matches your search criteria.

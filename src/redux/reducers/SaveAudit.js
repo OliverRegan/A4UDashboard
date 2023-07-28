@@ -29,7 +29,16 @@ export const saveAudit = createSlice({
                 sampleInterval: '',
                 samplePercentage: ''
             },
-            searchedTransactions: [],
+            search: {
+                searchedTransactions: [],
+                minAmount: '',
+                maxAmount: '',
+                startDate: '',
+                endDate: '',
+                startDateVal: '',
+                endDateVal: '',
+                description: ''
+            },
             recurringTransactions: []
         }
     },

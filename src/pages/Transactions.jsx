@@ -59,21 +59,6 @@ const columns = [
     },
 ];
 
-// const renderHead = (item, index) => <th key={index}>{item}</th>
-
-// const renderBody = (item, index) => (
-//     <tr key={index}>
-//         <td>{parseInt(item.debit) == 0 ? "Credit" : "Debit"}</td>
-//         <td>{item.accountNum}</td>
-//         <td>{item.accountName}</td>
-//         <td>{item.externalId}</td>
-//         <td>{item.source}</td>
-//         <td>{item.date}</td>
-//         <td>{item.description}</td>
-//         <td>{parseInt(item.debit) == 0 ? item.credit : item.debit}</td>
-//     </tr>
-// )
-
 const Transactions = (props) => {
 
     // Revamped stuff
