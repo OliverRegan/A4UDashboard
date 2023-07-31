@@ -6,60 +6,112 @@ import {
     Box,
     TextField,
     InputLabel,
-    Button
+    InputAdornment,
+    Button,
+    Checkbox
 } from "@mui/material"
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DesktopDatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import dayjs from 'dayjs';
-import Table from '../components/table/Table'
 import Axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 // Formik for searching
-import { Form, Formik } from 'formik'
+import { Form, Formik, useFormik } from 'formik'
 import values from '../components/utility/Formik/Search/DefaultValues'
-import validationSchema from '../components/utility/Formik/Search/validationSchema'
-
+// import validationSchema from '../components/utility/Formik/Search/validationSchema'
+import { setAudit } from '../redux/reducers/SaveAudit';
+import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
+import { DataGrid } from '@mui/x-data-grid';
+import columns from "../components/utility/GridDefinitions/TransactionColumns"
 
 const Search = (props) => {
 
     const audit = useSelector((state) => state.SaveAudit)
     const dispatch = useDispatch()
-
+    const [loading, setLoading] = useState(false)
+    const [alreadySearched, setAlreadySearched] = useState(false)
     // URL
     const searchURL = process.env.REACT_APP_BACKEND_URL + "/audit/search"
-
-    // Initial values that cannot be defined in Yup
-    const [endDate, setEndDate] = useState(null)
-    const [startDate, setStartDate] = useState(null)
-    const [endDateString, setEndDateString] = useState(null)
-    const [startDateString, setStartDateString] = useState(null)
     const [err, setErr] = useState(false)
-    const [dateErr, setDateErr] = useState('')
+    const [startDateErr, setStartDateErr] = useState('')
+    const [endDateErr, setEndDateErr] = useState('')
 
-    // For checking if search already done
-    const [alreadySearched, setAlreadySearched] = useState(false);
+    const formik = useFormik({
+        initialValues: {
+            endDate: audit.auditDetails.search.endDate === null ? null : dayjs(audit.auditDetails.search.endDate),
+            endDateString: audit.auditDetails.search.endDateString === '' ? '' : audit.auditDetails.search.endDateString,
+            startDate: audit.auditDetails.search.startDate === null ? null : dayjs(audit.auditDetails.search.startDate),
+            startDateString: audit.auditDetails.search.startDateString === '' ? '' : audit.auditDetails.search.startDateString,
+            minAmount: audit.auditDetails.search.minAmount === '' ? '' : audit.auditDetails.search.minAmount,
+            maxAmount: audit.auditDetails.search.maxAmount === '' ? '' : audit.auditDetails.search.maxAmount,
+            description: audit.auditDetails.search.description === '' ? '' : audit.auditDetails.search.description,
+            credit: audit.auditDetails.search.type.credit,
+            debit: audit.auditDetails.search.type.debit,
+        },
+        onSubmit: values => {
+            setLoading(true)
+            let body = {
+                "BankAccounts": audit.auditDetails.accounts.selectedAccounts,
+                "Description": values.description,
+                "StartDate": values.startDateString != null ? values.startDateString : '',
+                "EndDate": values.endDateString != null ? values.endDateString : '',
+                "StartAmount": values.minAmount === '' ? 0 : values.minAmount,
+                "EndAmount": values.maxAmount === '' ? 0 : values.maxAmount,
+                "Debit": values.debit,
+                "Credit": values.credit,
 
-    // Transactions to be received
-    const [transactions, setTransactions] = useState([])
+            }
+            Axios.post(searchURL, body)
+                .then((response) => {
+                    let searchedTransactions = [];
+                    response.data.transactions.forEach(transaction => {
+                        let transNew = transaction
+                        transNew.id = response.data.transactions.indexOf(transaction)
+                        searchedTransactions.push(transNew)
+                    })
+                    dispatch(setAudit([audit.file, audit.accounts, {
+                        ...audit.auditDetails,
+                        search: {
+                            ...audit.auditDetails.search,
+                            ...values,
+                            searchedTransactions: searchedTransactions,
+                            endDate: (values.endDate != null ? values.endDate.toString() : null),
+                            startDate: (values.startDate != null ? values.startDate.toString() : null),
+
+                        }
+                    }]))
+                    setErr(false)
+                    setLoading(false)
+                })
+
+                .catch((err) => {
+                    setErr(true)
+                })
+
+            setAlreadySearched(true)
+        }
+    })
 
 
     async function handleEndDateChange(value) {
         // Check is valid
         if (dayjs(value).isValid()) {
             // Set date
-            console.log('hei')
-
             let date = new Date(value)
             let dateString = (date.getUTCDate() + 1) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear()
-            setEndDate(value)
-            setEndDateString(dateString)
-            setDateErr('');
+            formik.setFieldValue('endDate', value)
+            formik.setFieldValue('endDateString', dateString)
+            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: value.toString(), endDateString: dateString } }]))
+            setEndDateErr('');
         } else if (value === null) {
-            setEndDate(value)
-            setEndDateString('')
-            setDateErr('');
+            formik.setFieldValue('endDate', null)
+            formik.setFieldValue('endDateString', '')
+            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: null, endDateString: '' } }]))
+            setEndDateErr('');
         } else {
-            return setDateErr('End date must be valid');
+            formik.setFieldValue('endDate', value)
+            formik.setFieldValue('endDateString', value.toString())
+            return setEndDateErr('End date must be valid');
         }
     }
     async function handleStartDateChange(value) {
@@ -68,332 +120,339 @@ const Search = (props) => {
             // Set date
             let date = new Date(value)
             let dateString = (date.getUTCDate() + 1) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear()
-            setStartDate(value)
-            setStartDateString(dateString)
-            setDateErr('');
+            // setStartDate(value)
+            // setStartDateString(dateString)
+            formik.setFieldValue('startDate', value)
+            formik.setFieldValue('startDateString', dateString)
+            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: value.toString(), startDateString: dateString } }]))
+            setStartDateErr('');
         } else if (value === null) {
-            setEndDate(value)
-            setEndDateString('')
-            setDateErr('');
+            // setEndDate(value)
+            // setEndDateString('')
+            formik.setFieldValue('startDate', null)
+            formik.setFieldValue('startDateString', '')
+            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: null, startDateString: '' } }]))
+            setStartDateErr('');
         } else {
-            return setDateErr('Start date must be valid');
+            formik.setFieldValue('startDate', value)
+            formik.setFieldValue('startDateString', value.toString())
+            return setStartDateErr('Start date must be valid');
         }
     }
-
-    async function handleSearch(formikValues) {
-
-
-
-        let body = {
-
-            "BankAccounts": props.audit,
-            "Description": formikValues.description,
-            "StartDate": startDateString != null ? startDateString : '',
-            "EndDate": endDateString != null ? endDateString : '',
-            "StartAmount": formikValues.startAmount === '' ? 0 : formikValues.startAmount,
-            "EndAmount": formikValues.endAmount === '' ? 0 : formikValues.endAmount,
-
-        }
-        await Axios.post(searchURL, body)
-            .then((response) => {
-
-                setTransactions([])
-                let sampledTransactions = [];
-                for (let i = 0; i < response.data.transactions.length; i++) {
-                    sampledTransactions.push(response.data.transactions[i]);
-                }
-                setTransactions(() => sampledTransactions)
-                setAlreadySearched(true)
-                console.log(props.audit)
-            })
-            .catch((err) => {
-                setAlreadySearched(true)
-            })
+    function dateErrorFunc(type) {
+        type === 'end' ? setEndDateErr('End date needs to be valid') : setStartDateErr('Start date needs to be valid')
+        type === 'end' ? setTimeout(() => { setEndDateErr('') }, 3000) : setTimeout(() => { setStartDateErr('') }, 3000)
     }
 
+    function clear() {
 
-    const customerTableHead = [
-        "Type",
-        "Account",
-        "External ID",
-        "ID",
-        "Source",
-        "Date",
-        "Description",
-        "Amount"
-    ]
-
-    function dateErrorFunc() {
-        setDateErr('Date needs to be valid')
-        setTimeout(() => { setDateErr('') }, 3000)
+        dispatch(setAudit([audit.file, audit.accounts, {
+            ...audit.auditDetails,
+            search: {
+                searchedTransactions: [],
+                type: {
+                    debit: false,
+                    credit: false
+                },
+                minAmount: '',
+                maxAmount: '',
+                startDateString: '',
+                endDateString: '',
+                startDate: null,
+                endDate: null,
+                description: ''
+            }
+        }]))
+        formik.resetForm()
+        setLoading(false)
     }
 
-    const renderHead = (item, index) => <th key={index}>{item}</th>
-
-    const renderBody = (item, index) => (
-        <tr key={index}>
-            <td>{parseInt(item.debit) == 0 ? "Credit" : "Debit"}</td>
-            <td>{item.accountNum}</td>
-            <td>{item.accountName}</td>
-            <td>{item.externalId}</td>
-            <td>{item.source}</td>
-            <td>{item.date}</td>
-            <td>{item.description}</td>
-            <td>{parseInt(item.debit) == 0 ? item.credit : item.debit}</td>
-        </tr>
-
-    )
 
     return (
-        <div>
+        <div className='ml-5'>
 
             <h2 className="page-header">
                 Search Transactions
             </h2>
-            <div className='mb-3 max-w-lg mx-auto'>
+            {
+                audit.auditDetails.accounts.selectedAccounts.length != 0 ?
+                    <AccountDetailsBar />
+                    :
+                    <></>
+            }
+            <div className="col-12">
                 <div className="card">
                     <div className="card__body">
-                        <div className="items-center justify-center">
-                            {audit.auditDetails.accounts.selectedAccounts.length != 0 ?
-                                <Formik
-                                    initialValues={values}
-                                    onSubmit={(values, actions) => { }}
-                                    validationSchema={validationSchema}
-                                >
-                                    {props => (
-                                        <Form>
-                                            <Box sx={{
-                                                mb: 2
-                                            }}>
-                                                <Box sx={{
-                                                    color: 'red',
-                                                    width: 1,
+                        {audit.auditDetails.accounts.selectedAccounts.length != 0 ?
+                            <form onSubmit={event => {
+                                event.preventDefault();
+                                formik.handleSubmit(event);
+                            }
+                            }>
+                                <div className='grid grid-cols-4 w-3/4 mx-auto'>
+
+
+                                    <div className='col-span-4 text-red-500 text-center'>
+                                        {
+                                            startDateErr != '' || endDateErr != '' ?
+                                                <div className='flex width-100 justify-around'>{startDateErr ? <Typography>{startDateErr} </Typography> : <></>}{endDateErr ? <Typography>{endDateErr}</Typography> : <></>}</div>
+                                                :
+                                                <></>
+                                        }
+                                    </div>
+
+                                    <div className='col-span-4'>
+                                        <TextField
+                                            fullWidth
+                                            name='description'
+                                            label="Description"
+                                            variant="filled"
+                                            value={formik.values.description}
+                                            onChange={formik.handleChange}
+                                            size='small'
+                                            sx={{
+                                                my: "4px",
+                                                width: 1
+                                            }}
+                                        />
+                                    </div>
+                                    <div className='col-span-2'>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                            <Box
+
+                                                sx={{
                                                     display: 'flex',
-                                                    justifyContent: 'center'
+                                                    flexDirection: 'column',
+                                                    width: 1,
+                                                    my: "4px"
                                                 }}>
-                                                    {
-                                                        dateErr != '' ?
-                                                            <Typography>
+                                                <DesktopDatePicker
+                                                    inputFormat="DD/MM/YYYY"
+                                                    name="startDate"
+                                                    onChange={handleStartDateChange}
+                                                    value={formik.values.startDate}
 
-                                                                {dateErr}
+                                                    renderInput={(params) => <TextField
+                                                        {...params}
+                                                        // inputProps={{ ...params.inputProps, readOnly: true }}
+                                                        label="Start Date"
 
-                                                            </Typography>
-                                                            :
-                                                            <></>
-                                                    }
-                                                </Box>
-
-
-                                                <InputLabel>Description</InputLabel>
-                                                <TextField
-                                                    fullWidth
-                                                    placeholder='Transaction description contains'
-                                                    name='description'
-                                                    value={props.values.description}
-                                                    onChange={props.handleChange}
-                                                    variant="outlined"
-                                                    size='small'
+                                                        size="small"
+                                                        variant="filled"
+                                                    />}
                                                 />
                                             </Box>
+
+                                        </LocalizationProvider>
+                                    </div>
+                                    <div className='col-span-2'>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
                                             <Box sx={{
                                                 display: 'flex',
-                                                justifyContent: 'space-between',
-                                                gap: 3
+                                                flexDirection: 'column',
+                                                width: 1,
+                                                my: "4px"
                                             }}>
-                                                <Box sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: 3,
-                                                    width: 1
-
-                                                }}>
-                                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                        <Box
-
-                                                            sx={{
-                                                                display: 'flex',
-                                                                flexDirection: 'column',
-                                                                width: 1
-                                                            }}>
-                                                            <InputLabel>Start Date</InputLabel>
-                                                            <DesktopDatePicker
-                                                                inputFormat="DD/MM/YYYY"
-                                                                name="startDate"
-                                                                onChange={handleStartDateChange}
-                                                                value={startDate}
-                                                                renderInput={(params) => <TextField
-                                                                    {...params}
-                                                                    size="small"
-                                                                />}
-                                                            />
-                                                        </Box>
-                                                        <Box sx={{
-                                                            display: 'flex',
-                                                            flexDirection: 'column'
-                                                        }}>
-                                                            <InputLabel>End Date</InputLabel>
-                                                            <DesktopDatePicker
-                                                                inputFormat="DD/MM/YYYY"
-                                                                name="endDate"
-                                                                onChange={handleEndDateChange}
-                                                                value={endDate}
-                                                                renderInput={(params) => <TextField
-                                                                    {...params}
-                                                                    size="small"
-                                                                />}
-                                                            />
-                                                        </Box>
-                                                    </LocalizationProvider>
-
-                                                </Box>
-                                                <Box sx={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: 3,
-                                                    width: 1
-
-                                                }}>
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column'
-                                                    }}>
-                                                        <InputLabel>Minimum Amount</InputLabel>
-                                                        <TextField
-                                                            fullWidth
-                                                            placeholder="Minimum amount of transaction"
-                                                            name="startAmount"
-                                                            variant="outlined"
-                                                            size='small'
-                                                            type={"number"}
-                                                            value={props.values.startAmount}
-                                                            onChange={props.handleChange}
-                                                        />
-                                                    </Box>
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        flexDirection: 'column'
-                                                    }}>
-                                                        <InputLabel>Maximum Amount</InputLabel>
-                                                        <TextField
-                                                            fullWidth
-                                                            name="endAmount"
-                                                            placeholder="Maximum amount of transaction"
-                                                            variant="outlined"
-                                                            size='small'
-                                                            type={"number"}
-                                                            value={props.values.endAmount}
-                                                            onChange={props.handleChange}
-                                                        />
-
-                                                    </Box>
-                                                </Box>
-
+                                                <DesktopDatePicker
+                                                    inputFormat="DD/MM/YYYY"
+                                                    onChange={handleEndDateChange}
+                                                    value={formik.values.endDate}
+                                                    clearable
+                                                    name="endDate"
+                                                    renderInput={(params) => <TextField
+                                                        {...params}
+                                                        // inputProps={{ ...params.inputProps, readOnly: true }}
+                                                        label="End Date"
+                                                        size="small"
+                                                        variant="filled"
+                                                    />}
+                                                />
                                             </Box>
-                                            {/* Buttons */}
-                                            <Box sx={{
-                                                display: 'flex',
-                                                justifyContent: 'space-around',
-                                                mt: 3,
-                                                gap: 3
-                                            }}>
-                                                <Button variant='contained' color="success"
-                                                    disabled={dateErr != ''}
-                                                    sx={{
-                                                        width: 1 / 2
-                                                    }}
-                                                    onClick={() => {
-                                                        // Set formik values from state -> needed to do this way while using the dayjs localization provider
-                                                        if (startDate != null && startDate != '' && dayjs(startDate).isValid()) {
-                                                            setDateErr('')
-                                                            props.setFieldValue('startDate', dayjs(startDate).toString())
-                                                        } else if (startDate === null) {
-                                                            // Do nothing
-                                                        } else {
-                                                            return dateErrorFunc()
-                                                        }
-                                                        if (endDate != null && endDate != '' && dayjs(endDate).isValid()) {
-                                                            setDateErr('')
-                                                            props.setFieldValue('endDate', dayjs(endDate).toString())
+                                        </LocalizationProvider>
+                                    </div>
+                                    <div className='col-span-2 col-start-2 flex justify-around my-4'>
+                                        <Box sx={{
+                                            justifyContent: 'center',
+                                            textAlign: 'center'
+                                        }}>
+                                            <Typography>Debit</Typography>
+                                            <Checkbox sx={{ mx: 'auto' }} checked={formik.values.debit} onClick={() => formik.setFieldValue('debit', !formik.values.debit)} />
+                                        </Box>
+                                        <Box sx={{
+                                            justifyContent: 'center',
+                                            textAlign: 'center'
+                                        }}>
+                                            <Typography>Credit</Typography>
+                                            <Checkbox sx={{ mx: 'auto' }} checked={formik.values.credit} onClick={() => formik.setFieldValue('credit', !formik.values.credit)} />
+                                        </Box>
+                                    </div>
 
-                                                        } else if (endDate == null) {
-                                                            // Do nothing
-                                                        } else {
-                                                            return dateErrorFunc()
-                                                        }
-                                                        if (dateErr === '') {
-                                                            setErr(true)
-                                                            handleSearch(props.values)
-                                                        } else {
-                                                            setErr(false)
-                                                        }
 
-                                                    }}
-                                                >Search</Button>
-                                                <Button variant='contained' color="error" sx={{
-                                                    width: 1 / 2
-                                                }}
-                                                    onClick={() => {
-                                                        setEndDate(null)
-                                                        setStartDate(null)
-                                                        setEndDateString(null)
-                                                        setStartDateString(null)
-                                                        setAlreadySearched(false)
-                                                        setTransactions([])
-                                                        props.handleReset()
-                                                    }
-                                                    }
-                                                >Clear</Button>
+                                    <div className='col-span-2'>
+                                        <TextField
+                                            fullWidth
+                                            InputProps={{
+                                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                            }}
+                                            label="Minimum Amount"
+                                            variant="filled"
+                                            name="minAmount"
+                                            size='small'
+                                            type={"number"}
+                                            value={formik.values.minAmount}
+                                            onChange={formik.handleChange}
+                                            sx={{
+                                                my: "4px",
+                                                width: 1
+                                            }}
+                                        />
+                                    </div>
+                                    <div className='col-span-2'>
+                                        <TextField
+                                            fullWidth
+                                            name="maxAmount"
+                                            InputProps={{
+                                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                            }}
+                                            label="Maximum Amount"
+                                            variant="filled" size='small'
+                                            type={"number"}
+                                            value={formik.values.maxAmount}
+                                            onChange={formik.handleChange}
+                                            sx={{
+                                                my: "4px",
+                                                width: 1
+                                            }}
+                                        />
 
-                                            </Box>
-                                        </Form>)}
-                                </Formik>
-                                :
-                                <div className='my-20'>
-                                    <h2 className='text-center w-3/4 mx-auto'>
-                                        You will be able to enter search terms once an audit has been uploaded
-                                    </h2>
+                                    </div>
+                                    <div className='col-span-2'>
+                                        <Button variant='contained' color="success"
+                                            disabled={startDateErr != '' || endDateErr != ''}
+                                            sx={{
+                                                mt: '1rem',
+                                                mx: 'auto',
+                                                width: 1
+                                            }}
+                                            onClick={() => {
+                                                // Set formik values from state -> needed to do this way while using the dayjs localization provider
+                                                if (formik.values.startDate != null && formik.values.startDate != '' && dayjs(formik.values.startDate).isValid()) {
+                                                    setStartDateErr('')
+                                                    formik.setFieldValue('startDateString', dayjs(formik.values.startDate).toString())
+                                                } else if (formik.values.startDate === null) {
+                                                    // Do nothing
+                                                } else {
+                                                    return dateErrorFunc('start')
+                                                }
+                                                if (formik.values.endDate != null && formik.values.endDate != '' && dayjs(formik.values.endDate).isValid()) {
+                                                    setEndDateErr('')
+                                                    formik.setFieldValue('endDateString', dayjs(formik.values.endDate).toString())
+
+                                                } else if (formik.values.endDate == null) {
+                                                    // Do nothing
+                                                } else {
+                                                    return dateErrorFunc('end')
+                                                }
+                                                if (startDateErr === '' && endDateErr === '') {
+                                                    setErr(false)
+                                                    formik.submitForm()
+                                                } else {
+                                                    setErr(true)
+
+                                                }
+
+                                            }}
+                                        >Search</Button>
+                                    </div>
+                                    <div className='col-span-2'>
+                                        <Button variant='contained'
+                                            color="error" sx={{
+                                                mt: '1rem',
+                                                width: 1,
+                                                mx: 'auto'
+                                            }}
+                                            onClick={() => {
+                                                handleEndDateChange(null)
+                                                handleStartDateChange(null)
+                                                clear()
+                                            }
+                                            }
+                                        >Clear</Button>
+                                    </div>
                                 </div>
-                            }
-                        </div>
+                            </form>
+                            :
+                            <div className='my-20'>
+                                <h2 className='text-center w-3/4 mx-auto'>
+                                    You will be able to enter search terms once an audit has been uploaded
+                                </h2>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
-            {audit.auditDetails.search.searchedTransactions.length != 0 ?
-                <div className="row">
-                    <div className="col-12">
-                        <div className="card">
-                            <div className="card__body">
-                                {audit.auditDetails.search.searchedTransactions.length != 0 ?
-                                    <Table
-                                        // limit='10'
-                                        headData={customerTableHead}
-                                        renderHead={(item, index) => renderHead(item, index)}
-                                        bodyData={transactions.length != 0 ? transactions : []}
-                                        renderBody={(item, index) => renderBody(item, index, props)}
 
-                                    />
-                                    :
-                                    (alreadySearched && audit.search.searchedTransactions.length === 0 ?
-                                        <div className='my-20'>
-                                            <h2 className='text-center'>
-                                                Nothing matches your search criteria.
-                                            </h2>
-                                        </div>
+            {
+                audit.auditDetails.accounts.selectedAccounts.length != 0 ?
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="card">
+                                <div className="card__body">
+                                    {audit.auditDetails.search.searchedTransactions.length != 0 ?
+                                        <DataGrid
+                                            rows={audit.auditDetails.search.searchedTransactions}
+                                            columns={columns}
+                                            autoHeight={true}
+                                            pageSize={100}
+                                        />
                                         :
-                                        <div className='my-20'>
-                                            <h2 className='text-center'>
-                                                Click search to show relevant transactions.
-                                            </h2>
-                                        </div>
-                                    )
+                                        (alreadySearched && audit.auditDetails.search.searchedTransactions.length === 0 ?
+                                            <div className='my-20'>
+                                                {loading ?
+                                                    <div className="flex justify-center my-4">
+                                                        <div role="status">
+                                                            <svg aria-hidden="true" class="w-20 h-20 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor" />
+                                                                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    :
+                                                    <h2 className='text-center'>
+                                                        {err ?
+                                                            "Something went wrong"
+                                                            :
+                                                            "Nothing matches your search criteria."}
+                                                    </h2>
+                                                }
 
-                                }
+                                            </div>
+                                            :
 
+                                            (alreadySearched && audit.auditDetails.search.searchedTransactions.length === 0 && !loading ?
+                                                <div className='my-20'>
+                                                    <h2 className='text-center text-red'>
+                                                        Nothing matches your search criteria.
+                                                    </h2>
+                                                </div>
+                                                :
+                                                <div className='my-20'>
+                                                    <h2 className='text-center'>
+                                                        Click search to show relevant transactions.
+                                                    </h2>
+                                                </div>
+                                            )
+                                        )
+
+                                    }
+
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                : <></>}
+                    :
+                    <></>
+            }
         </div >
     )
 }

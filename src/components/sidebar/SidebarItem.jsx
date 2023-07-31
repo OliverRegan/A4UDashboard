@@ -1,14 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const SidebarItem = props => {
-
-    const active = props.active ? 'active' : ''
+    console.log()
 
     return (
         <div className="sidebar__item">
-            <div className={`sidebar__item-inner ${active}`}>
+            <div className={'sidebar__item-inner ' + (props.active ? "text-blue-400" : "") + "  hover:text-blue-500"}>
                 <i className={props.icon}></i>
-                <span>
+                <span className=''>
                     {props.title}
                 </span>
             </div>

@@ -5,10 +5,10 @@ export const IDENTITY_CONFIG_OIDC = {
     responseType: 'code',
 
     // Dev
-    redirectUri: "http://localhost:3000",
+    // redirectUri: "http://localhost:3000/dashboard",
 
     // Prod
-    // redirectUri: "https://auditing4you.com/dashboard",
+    redirectUri: "https://auditing4you.com/dashboard",
 
     automaticSilentRenew: true
 }

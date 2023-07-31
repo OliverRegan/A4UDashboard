@@ -4,6 +4,7 @@ import './sidebar.css'
 import logo from '../../assets/images/logo.png'
 import sidebar_items from '../../assets/JsonData/sidebar_routes.json'
 import user_image from '../../assets/images/profile.png'
+import SidebarItem from './SidebarItem'
 import Dropdown from '../dropdown/Dropdown'
 import ThemeMenu from '../thememenu/ThemeMenu'
 import notifications from '../../assets/JsonData/notification.json'
@@ -14,21 +15,6 @@ const user = {
     display_name: 'Matthew Harris',
     title: 'Auditor',
     image: user_image
-}
-
-const SidebarItem = props => {
-
-    const active = props.active ? 'active' : ''
-    return (
-        <div className="sidebar__item">
-            <div className={`sidebar__item-inner ${active}`}>
-                <i className={props.icon}></i>
-                <span>
-                    {props.title}
-                </span>
-            </div>
-        </div>
-    )
 }
 
 const Sidebar = props => {
@@ -44,6 +30,8 @@ const Sidebar = props => {
     //         }
     //     }
     // }
+
+
 
     return (
         <div className='sidebar'>

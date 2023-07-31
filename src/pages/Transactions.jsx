@@ -11,53 +11,33 @@ import html2pdf from 'html2pdf.js/dist/html2pdf.min';
 import { useFormik } from 'formik';
 import { setAudit } from '../redux/reducers/SaveAudit';
 import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
-
-import { TextField, Button } from '@mui/material';
-
+import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
+import { TextField, Button, InputAdornment, Box, Typography, Checkbox } from '@mui/material';
+import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 import "../../src/assets/css/excelToJson.css"
 import '../components/topnav/topnav.css';
 import "react-datepicker/dist/react-datepicker.css";
+import columns from "../components/utility/GridDefinitions/TransactionColumns"
+import ExportBar from '../components/exportBar/ExportBar';
 
-const columns = [
-    { field: 'accountNum', headerName: 'Type', flex: 1 },
-    { field: 'accountName', headerName: 'Account', flex: 1 },
-    {
-        field: 'externalId',
-        headerName: 'External Id',
-        type: 'string',
-        flex: 1,
-    },
-    {
-        field: 'credit',
-        headerName: 'Credit',
-        type: 'string',
-        flex: 1,
-    },
-    {
-        field: 'debit',
-        headerName: 'Debit',
-        type: 'string',
-        flex: 1,
-    },
-    {
-        field: 'source',
-        headerName: 'Source',
-        type: 'string',
-        flex: 1,
-    },
-    {
-        field: 'date',
-        headerName: 'Date',
-        type: 'string',
-        flex: 1,
-    },
-    {
-        field: 'description',
-        headerName: 'Description',
-        type: 'string',
-        flex: 1,
-    },
-];
+function getSeedObj(seed) {
+    if (seed == "No Transactions Sampled") {
+        return {
+            seed: '',
+            credit: '',
+            debit: '',
+            materiality: ''
+        }
+    } else {
+        return {
+            seed: seed,
+            credit: seed.split('-')[1],
+            debit: seed.split('-')[2],
+            materiality: seed.split('-')[3]
+        }
+    }
+}
+
 
 const Transactions = (props) => {
 
@@ -73,7 +53,8 @@ const Transactions = (props) => {
             credit: audit.auditDetails?.sampling.credit != '' ? audit.auditDetails.sampling.credit : '',
             debit: audit.auditDetails?.sampling.debit != '' ? audit.auditDetails.sampling.debit : '',
             materiality: audit.auditDetails?.sampling.materiality != '' ? audit.auditDetails.sampling.materiality : '',
-            seed: audit.auditDetails?.sampling.seed != '' ? audit.auditDetails.sampling.seed : '',
+            seedInput: audit.auditDetails?.sampling.seedInput != '' ? audit.auditDetails.sampling.seedInput : '',
+            useSeed: audit.auditDetails?.sampling.useSeed,
         },
         onSubmit: values => {
             setIsLoading(true)
@@ -88,7 +69,7 @@ const Transactions = (props) => {
                 "MaterialityIn": values.materiality === '' ? 0 : values.materiality,
                 "DebitIn": values.debit === '' ? 0 : values.debit,
                 "CreditIn": values.credit === '' ? 0 : values.credit,
-                "SeedCode": values.seed === '' ? '0' : values.seed, // It needs to be a string and don't ask why
+                "SeedCode": values.seedInput === '' ? '0' : values.seedInput, // It needs to be a string and don't ask why
             }
             console.log(body)
             fetch(transactionsUrl, {
@@ -100,48 +81,57 @@ const Transactions = (props) => {
             })
                 .then((res) => res.json())
                 .then((response) => {
-                    console.log(response)
                     let transactions = []
                     response.transactions.forEach(transaction => {
                         let transNew = transaction
                         transNew.id = response.transactions.indexOf(transaction)
                         transactions.push(transNew)
                     })
-
+                    let seedObj = getSeedObj(response.seedCode)
                     dispatch(setAudit([audit.file, audit.accounts, {
                         ...audit.auditDetails,
                         sampling: {
                             ...audit.auditDetails.sampling,
+                            ...values,
                             sampledTransactions: transactions,
-                            seed: response.seedCode,
+                            credit: seedObj.credit,
+                            debit: seedObj.credit,
+                            materiality: seedObj.materiality,
+                            seed: seedObj.seed,
                             samplePercentage: response.samplePercentage,
                             sampleInterval: response.sampleInterval,
+                            creditSampled: response.creditSampled,
+                            debitSampled: response.debitSampled
                         }
                     }]))
                     setError('')
                     setIsLoading(false)
-                    console.log(audit)
                 }).catch((error) => {
+                    console.log(error)
                     setError(error)
                 })
         },
     });
-
+    console.log(audit)
     function clearSamples() {
         dispatch(setAudit([audit.file, audit.accounts, {
             ...audit.auditDetails,
             sampling: {
                 sampledTransactions: [],
-                seed: '',
-                samplePercentage: '',
-                sampleInterval: '',
-                seedInput: '',
+                useSeed: false,
                 credit: '',
                 debit: '',
                 materiality: '',
+                seedInput: '',
+                seed: '',
+                sampleInterval: '',
+                samplePercentage: '',
+                creditSampled: 0,
+                debitSampled: 0
             }
         }]))
         formik.resetForm()
+        setIsLoading(false)
     }
 
     const uniqueFileName = require('unique-filename');
@@ -166,41 +156,15 @@ const Transactions = (props) => {
 
                 {audit.auditDetails.accounts.selectedAccounts.length != 0 ?
                     <>
+                        <AccountDetailsBar />
                         <div className="col-12">
                             <div className="card">
                                 <div className="card__body">
-                                    <div className='row h-20 mb-5'>
-
-                                        <div className='col-3 text-center h-100 flex flex-col justify-between'>
-                                            <p className='my-2'>Population: </p>
-                                            <p>
-                                                <span className='text-3xl font-bold'>${Math.abs(parseInt(audit.auditDetails.accounts.population)).toLocaleString()}</span><span className='font-bold'>{parseInt(audit.auditDetails.accounts.population) < 0 ? " CR" : " DR"}</span>
-                                            </p>
-                                        </div>
-                                        <div className='col-3 text-center h-100 flex flex-col justify-between'>
-                                            <p className='my-2'>No. of Transactions:</p>
-                                            <p><span className='text-3xl font-bold'>{(audit.auditDetails.accounts.transactionNum)}</span></p>
-                                        </div>
-                                        <div className='col-3 text-center h-100 flex flex-col justify-between'>
-                                            <p className='my-2'>Credit:</p>
-                                            <p>
-                                                <span className='text-3xl font-bold'>${(parseInt(audit.auditDetails.accounts.creditAmount).toLocaleString())}</span>
-                                            </p>
-                                        </div>
-                                        <div className='col-3 text-center h-100 flex flex-col justify-between'>
-                                            <p className='my-2'>Debit:</p>
-                                            <p>
-                                                <span className='text-3xl font-bold'>${(parseInt(audit.auditDetails.accounts.debitAmount).toLocaleString())}</span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-12">
-                            <div className="card">
-                                <div className="card__body">
-                                    <form onSubmit={formik.handleSubmit}>
+                                    <form onSubmit={event => {
+                                        event.preventDefault();
+                                        formik.handleSubmit(event);
+                                    }
+                                    }>
                                         <div className='grid grid-cols-4 w-3/4 mx-auto'>
 
                                             <div className='col-span-2'>
@@ -208,6 +172,8 @@ const Transactions = (props) => {
                                                     label="Credit Samples"
                                                     // variant='contained'
                                                     placeholder='Credit Samples'
+                                                    disabled={formik.values.useSeed}
+
                                                     variant='filled'
                                                     size='small'
                                                     sx={{
@@ -226,6 +192,7 @@ const Transactions = (props) => {
                                                     label="Debit Samples"
                                                     // variant='contained'
                                                     placeholder='Debit Samples'
+                                                    disabled={formik.values.useSeed}
                                                     variant='filled'
                                                     size='small'
                                                     sx={{
@@ -244,6 +211,10 @@ const Transactions = (props) => {
                                                     label="Materiality Input"
                                                     // variant='contained'
                                                     placeholder='Materiality Input'
+                                                    disabled={formik.values.useSeed}
+                                                    InputProps={{
+                                                        startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                                                    }}
                                                     variant='filled'
                                                     size='small'
                                                     sx={{
@@ -257,11 +228,33 @@ const Transactions = (props) => {
                                                     value={formik.values.materiality}
                                                 />
                                             </div>
-                                            <div className='col-span-2'>
+                                            <div className='col-span-1 flex flex-col'>
+                                                <div className='text-right row grow justify-around px-3'>
+                                                    <div className="flex flex-col justify-center">
+                                                        <p>Use Seed Code:</p>
+                                                    </div>
+
+                                                    <Checkbox sx={{}}
+                                                        checked={formik.values.useSeed}
+                                                        onClick={() => {
+                                                            formik.setFieldValue('useSeed', !formik.values.useSeed);
+                                                            if (!formik.values.useSeed) {
+                                                                formik.setFieldValue('credit', '')
+                                                                formik.setFieldValue('debit', '')
+                                                                formik.setFieldValue('materiality', '')
+                                                            } else {
+                                                                formik.setFieldValue('seeInput', '')
+                                                            }
+                                                        }} />
+
+                                                </div>
+                                            </div>
+                                            <div className='col-span-1'>
                                                 <TextField
                                                     label="Seed Code Input"
                                                     // variant='contained'
                                                     placeholder='Seed Code Input'
+                                                    disabled={!formik.values.useSeed}
                                                     variant='filled'
                                                     size='small'
                                                     sx={{
@@ -270,7 +263,7 @@ const Transactions = (props) => {
                                                     }}
                                                     id="seedInput"
                                                     name="seedInput"
-                                                    type="number"
+                                                    type="string"
                                                     onChange={formik.handleChange}
                                                     value={formik.values.seedInput}
                                                 />
@@ -279,6 +272,7 @@ const Transactions = (props) => {
                                                 <Button
                                                     type='submit'
                                                     variant='contained'
+                                                    color='success'
                                                     sx={{
                                                         mt: '1rem',
                                                         width: 1,
@@ -331,6 +325,7 @@ const Transactions = (props) => {
                                     </div>
                                 </div>
                             </div>
+                            {/* <ExportBar audit={audit} /> */}
                         </div>
                     </>
                     :
@@ -358,7 +353,7 @@ const Transactions = (props) => {
                                                         <div className='col-3 text-center'>
                                                             <p className='my-2'>Transactions Sampled:</p>
                                                             <span className='text-3xl font-bold'>
-                                                                0 (to be added)</span>
+                                                                {audit.auditDetails.sampling.creditSampled + audit.auditDetails.sampling.debitSampled}</span>
                                                         </div>
                                                         : <></>
                                                 }
@@ -390,12 +385,33 @@ const Transactions = (props) => {
                                             </div>
                                         </div>
                                         :
-                                        <div className='my-20'>
-                                            <h2 className='text-center w-3/4 mx-auto'>
+                                        <div className='my-20 text-center'>
 
-                                                Transaction sampling will be available after an audit has been uploaded and accounts have been selected.
+                                            {audit.auditDetails.accounts.selectedAccounts.length > 0 ?
+                                                <h2 className=' w-3/4 mx-auto'>
+                                                    Sampled transactions will appear here, or all transactions will appear here when no criteria is input.
+                                                </h2>
+                                                :
+                                                <>
+                                                    <h2 className=' w-3/4 mx-auto'>Transaction sampling will be available after an audit has been uploaded and accounts have been selected.</h2>
+                                                    <Button
+                                                        component={Link}
+                                                        to="/accounts"
+                                                        variant="contained"
+                                                        color='success'
+                                                        sx={{
+                                                            width: 0.25,
+                                                            mx: 'auto',
+                                                            mt: "2rem",
+                                                            "&:hover": {
+                                                                color: "#fff"
+                                                            }
+                                                        }}>Select Accounts</Button>
+                                                </>
+                                            }
 
-                                            </h2>
+
+
                                         </div>
                                     }
                                 </>

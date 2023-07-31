@@ -9,6 +9,9 @@ export const saveAudit = createSlice({
         },
         accounts: [],
         auditDetails: {
+            auditor: {
+                name: ''
+            },
             auditName: "",
             clientName: "",
             financialYear: "",
@@ -21,25 +24,57 @@ export const saveAudit = createSlice({
             },
             sampling: {
                 sampledTransactions: [],
+                useSeed: false,
                 credit: '',
                 debit: '',
                 materiality: '',
                 seedInput: '',
                 seed: '',
                 sampleInterval: '',
-                samplePercentage: ''
+                samplePercentage: '',
+                creditSampled: 0,
+                debitSampled: 0,
             },
             search: {
                 searchedTransactions: [],
+                type: {
+                    debit: false,
+                    credit: false
+                },
                 minAmount: '',
                 maxAmount: '',
-                startDate: '',
-                endDate: '',
-                startDateVal: '',
-                endDateVal: '',
+                startDateString: '',
+                endDateString: '',
+                startDate: null,
+                endDate: null,
                 description: ''
             },
-            recurringTransactions: []
+            recurring: {
+                recurringTransactions: [],
+                identifierTransactions: [],
+                type: {
+                    debit: false,
+                    credit: false
+                },
+                recurrence: {
+                    daily: false,
+                    weekly: false,
+                    monthly: false,
+                    quarterly: false,
+                    biYearly: false,
+                    yearly: false
+                },
+                minAmount: '',
+                maxAmount: '',
+                startDateString: '',
+                endDateString: '',
+                startDate: null,
+                endDate: null,
+                description: '',
+                useExact: false,
+                exactAmount: '',
+                percentage: ''
+            }
         }
     },
     reducers: {

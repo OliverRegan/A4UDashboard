@@ -28,5 +28,10 @@
         "display_name": "Recurring Transactions",
         "route": "/recurring-transactions",
         "icon": "bx bx-revision"
+    },
+    {
+        "display_name": "Management",
+        "route": "/management",
+        "icon": "bx bx-group"
     }
 ]

@@ -41,9 +41,9 @@
     text-transform: capitalize;
 }
 
-.sidebar__item-inner:hover {
-    color: white;
-}
+/* .sidebar__item-inner:hover {
+    color: lightblue;
+} */
 
 .table1 {
     left: 60px;
@@ -132,9 +132,9 @@ table {
     text-transform: capitalize;
 }
 
-.sidebar__item-inner:hover {
+/* .sidebar__item-inner:hover {
     color: white;
-}
+} */
 
 .table1 {
     left: 60px;

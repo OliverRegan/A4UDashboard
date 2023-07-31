@@ -2,16 +2,25 @@ import React, { useEffect, useState } from 'react';
 import '../components/topnav/topnav.css';
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from 'react-modal';
-import Uploader from '../components/uploader/Uploader';
+
+import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 
 import { Formik, useFormik } from 'formik';
 import {
     Button,
     TextField,
-    Typography
+    Typography,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAudit } from '../redux/reducers/SaveAudit';
+
+// Import React FilePond
+import { FilePond } from 'react-filepond'
+
+// Import FilePond styles
+import 'filepond/dist/filepond.min.css'
+import { Redirect } from 'react-router-dom/cjs/react-router-dom.min';
+import { useAuth } from 'oidc-react';
 
 const customStyles = {
     content: {
@@ -37,11 +46,13 @@ const customStyles = {
 const Audits = (props) => {
 
     const [modalIsOpen, setIsOpen] = useState(false);
-    const [files, setFiles] = useState()
-    const [choice, setChoice] = useState();
 
+    const [choice, setChoice] = useState();
     const dispatch = useDispatch()
     const audit = useSelector((state) => state.SaveAudit)
+    const [file, setFile] = useState(audit.file)
+
+    const auth = useAuth()
 
     Modal.setAppElement('body');
 
@@ -63,19 +74,8 @@ const Audits = (props) => {
 
     function handleUpload(data) {
         // ID's for MUI
-        let accounts = JSON.parse(data)
-        accounts.forEach((account) => {
-            account['id'] = accounts.indexOf(account)
-        })
-
-        // Pull needed file details
-        let fileData = {
-            fileName: files[0].file.name,
-            fileSize: files[0].file.size,
-        }
 
 
-        dispatch(setAudit([fileData, accounts, audit.auditDetails]))
     }
 
     const openModal = (callback) => {
@@ -96,25 +96,79 @@ const Audits = (props) => {
         })
     }
     async function validateFileRemoval() {
-        return await checkRemove() ? dispatch(setAudit([{ fileName: '', fileSize: '' }, audit.accounts, audit.auditDetails])) : ''
+        return await checkRemove() ? dispatch(setAudit([{ fileName: '', fileSize: '' }, [], audit.auditDetails])) : ''
     }
-    async function validateAuditRemoval() {
-        return await checkRemove() ? dispatch(setAudit([
-            {
-                fileName: '',
-                fileSize: ''
-            },
-            [],
-            {
-                auditName: "",
-                clientName: "",
-                financialYear: "",
-                selectedAccounts: [],
-                sampledTransactions: [],
-                searchedTransactions: [],
-                recurringTransactions: []
-            }])) : ''
-    }
+    // async function validateAuditRemoval() {
+    //     return await checkRemove() ? dispatch(setAudit([
+    //         {
+    //             fileName: '',
+    //             fileSize: ''
+    //         },
+    //         [],
+    //         {
+    //             auditName: "",
+    //             clientName: "",
+    //             financialYear: "",
+    //             accounts: {
+    //                 population: '',
+    //                 selectedAccounts: [],
+    //                 transactionNum: '',
+    //                 creditAmount: '',
+    //                 debitAmount: ''
+    //             },
+    //             sampling: {
+    //                 sampledTransactions: [],
+    //                 useSeed: false,
+    //                 credit: '',
+    //                 debit: '',
+    //                 materiality: '',
+    //                 seedInput: '',
+    //                 seed: '',
+    //                 sampleInterval: '',
+    //                 samplePercentage: ''
+    //             },
+    //             search: {
+    //                 searchedTransactions: [],
+    //                 type: {
+    //                     debit: false,
+    //                     credit: false
+    //                 },
+    //                 minAmount: '',
+    //                 maxAmount: '',
+    //                 startDateString: '',
+    //                 endDateString: '',
+    //                 startDate: null,
+    //                 endDate: null,
+    //                 description: '',
+    //             },
+    //             recurring: {
+    //                 recurringTransactions: [],
+    //                 identifierTransactions: [],
+    //                 type: {
+    //                     debit: false,
+    //                     credit: false
+    //                 },
+    //                 recurrence: {
+    //                     daily: false,
+    //                     weekly: false,
+    //                     monthly: false,
+    //                     quarterly: false,
+    //                     biYearly: false,
+    //                     yearly: false
+    //                 },
+    //                 minAmount: '',
+    //                 maxAmount: '',
+    //                 startDateString: '',
+    //                 endDateString: '',
+    //                 startDate: null,
+    //                 endDate: null,
+    //                 description: '',
+    //                 useExact: false,
+    //                 exactAmount: '',
+    //                 percentage: ''
+    //             }
+    //         }])) : ''
+    // }
 
     function formatBytes(bytes, decimals) {
         if (bytes == 0) return '0 Bytes';
@@ -131,7 +185,7 @@ const Audits = (props) => {
                 <div className="card">
                     <div className="card__body">
                         {/* {files === {} ? */}
-                        {files != {} ?
+                        {props.file != {} ?
                             <div>
                                 <div className='flex flex-col mx-auto w-1/2'>
                                     <div classname="flex justify-around my-3">
@@ -212,12 +266,101 @@ const Audits = (props) => {
                         }
                     </div>
                 </div>
-                {audit.file.fileName === "" ?
-                    <Uploader
-                        setFiles={setFiles}
-                        clear={props.clear}
-                        handleUpload={handleUpload}
-                        setIsOpen={setIsOpen} />
+                {/* Temporary - need to add filename retrival to back end */}
+                {audit.accounts.length === 0 ?
+                    <FilePond
+                        onRemoveFile={() => { props.clear() }}
+                        dropOnElement
+                        labelInvalidField
+                        server={{
+                            url: process.env.REACT_APP_BACKEND_URL + "/audit/excel",
+                            process: {
+                                onload: (res) => {
+                                    let data = JSON.parse(res)
+                                    console.log(data.accounts)
+                                    // props.handleUpload(res);
+                                    let accounts = data.accounts
+                                    accounts.forEach((account) => {
+                                        account['id'] = accounts.indexOf(account)
+                                    })
+                                    // Pull needed file details
+                                    let fileData = {
+                                        fileName: data.fileName,
+                                        fileSize: data.fileSize
+                                    }
+
+                                    dispatch(setAudit([fileData, accounts, {
+                                        auditName: "",
+                                        clientName: "",
+                                        financialYear: "",
+                                        auditor: {
+                                            name: auth.userData.profile.name
+                                        },
+                                        accounts: {
+                                            population: '',
+                                            selectedAccounts: [],
+                                            transactionNum: '',
+                                            creditAmount: '',
+                                            debitAmount: ''
+                                        },
+                                        sampling: {
+                                            sampledTransactions: [],
+                                            useSeed: false,
+                                            credit: '',
+                                            debit: '',
+                                            materiality: '',
+                                            seedInput: '',
+                                            seed: '',
+                                            sampleInterval: '',
+                                            samplePercentage: ''
+                                        },
+                                        search: {
+                                            searchedTransactions: [],
+                                            type: {
+                                                debit: false,
+                                                credit: false
+                                            },
+                                            minAmount: '',
+                                            maxAmount: '',
+                                            startDateString: '',
+                                            endDateString: '',
+                                            startDate: null,
+                                            endDate: null,
+                                            description: '',
+                                        },
+                                        recurring: {
+                                            recurringTransactions: [],
+                                            identifierTransactions: [],
+                                            type: {
+                                                debit: false,
+                                                credit: false
+                                            },
+                                            recurrence: {
+                                                daily: false,
+                                                weekly: false,
+                                                monthly: false,
+                                                quarterly: false,
+                                                biYearly: false,
+                                                yearly: false
+                                            },
+                                            minAmount: '',
+                                            maxAmount: '',
+                                            startDateString: '',
+                                            endDateString: '',
+                                            startDate: null,
+                                            endDate: null,
+                                            description: '',
+                                            useExact: false,
+                                            exactAmount: '',
+                                            percentage: ''
+                                        }
+                                    }]))
+                                },
+                            }
+                        }}
+                        name="file"
+                        labelIdle='<p>Drag & Drop your files or <span class="filepond--label-action">Browse</span><br />Only accepts .xlsx files</p>'
+                    />
                     :
                     <div className='card'>
                         <div className='card-body '>
@@ -234,16 +377,30 @@ const Audits = (props) => {
                                     <p>{formatBytes(audit.file.fileSize, 0)}</p>
                                 </div>
                             </div>
-                            <div className=' flex justify-center'>
-                                <Button
-                                    onClick={validateFileRemoval}
-                                    // onClick={}
-                                    variant="contained"
-                                    color='error'
-                                    sx={{
-                                        width: 1 / 4,
-                                        mt: 4
-                                    }}>Clear File</Button>
+                            <div className=' grid grid-cols-4 gap-2 w-1/2 mx-auto mt-4'>
+                                <div className='col-span-2'>
+                                    <Button
+                                        component={Link}
+                                        to="/accounts"
+                                        variant="contained"
+                                        color='success'
+                                        sx={{
+                                            width: 1,
+                                            "&:hover": {
+                                                color: "#fff"
+                                            }
+                                        }}>Select Accounts</Button>
+                                </div>
+                                <div className='col-span-2'>
+                                    <Button
+                                        onClick={validateFileRemoval}
+                                        // onClick={}
+                                        variant="contained"
+                                        color='error'
+                                        sx={{
+                                            width: 1,
+                                        }}>Clear File</Button>
+                                </div>
                             </div>
 
                         </div>

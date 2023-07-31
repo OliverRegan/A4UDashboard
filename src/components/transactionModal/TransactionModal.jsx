@@ -19,8 +19,9 @@ function createRowsAndColumns(data, setRows, setCols) {
     let rows = []
     let columns = []
     data.forEach((element) => {
-        element['id'] = data.indexOf(element)
-        rows.push(element)
+        let newElement = { ...element }
+        newElement['id'] = data.indexOf(element)
+        rows.push(newElement)
 
     })
     Object.keys(data[0]).forEach((key) => {
@@ -54,7 +55,6 @@ const TransactionModal = (props) => {
         props.setShowModal(false)
         props.setDataObj()
     }
-    console.log(props)
     return (<>
         {!props.dataObj ? <></>
             :
