@@ -1,0 +1,128 @@
+<!-- This is not used in the front end, it is a template in the backend for PDF export -->
+<!--<style>
+    body {
+        font-size: 5rem;
+    }
+</style>-->
+<html>
+
+<body style="font-size: 1rem; font-family: Arial, Helvetica, sans-serif;">
+    <div style="width: 100%;">
+        <h1>{auditName}</h1>
+        <h2>Year Ending: <span>{financialYear}</span></h2>
+        <div style="display: flex; flex-direction: column;">
+            <div style="display: flex;">
+                <h3 style="width: 50%; margin: 0%;">Client Name: </h3>
+                <h3 style="width: 50%; margin: 0%;">{clientName}</h3>
+            </div>
+            <div style="display: flex;">
+                <h4 style="width: 50%; margin: 0%;">Auditor: </h4>
+                <h4 style="width: 50%; margin: 0%;">{auditorName}</h4>
+            </div>
+        </div>
+
+        <div style="width: 100%; display: flex; flex-direction: column;">
+            <div style="flex: 1;">
+                <div style="display: flex;">
+                    <p style="width: 50%; margin: 0%;">Selected Accounts: </p>
+                    <p style="width: 50%; margin: 0%;">{selectedAccountsLength}</p>
+                </div>
+                <div style="display: flex;;">
+                    <p style="width: 50%; margin: 0%;">Sampled Transactions:</p>
+                    <p style="width: 50%; margin: 0%;">{sampledTransactionsLength}</p>
+                </div>
+                <div style="display: flex; ">
+                    <p style="width: 50%; margin: 0%;">Accounts Not Included: </p>
+                    <p style="width: 50%; margin: 0%;">{notSelectedAccountsLength}</p>
+                </div>
+                <div style="display: flex;">
+                    <p style="width: 50%; margin: 0%;">Selected Account Transactions:</p>
+                    <p style="width: 50%; margin: 0%;">{selectedTransactionsLength}</p>
+                </div>
+                <div style="display: flex;">
+                    <p style="width: 50%; margin: 0%;">Selected Account Population:</p>
+                    <p style="width: 50%; margin: 0%;">{selectedAccountsPopulation}</p>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h4>Sampling Blurb</h4>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut tellus urna. Nullam eget odio sapien.
+                Vivamus ac bibendum augue. Nulla id finibus purus, ac gravida nisi. Cras eget nunc feugiat, fermentum
+                purus quis, hendrerit sem. Sed non consequat turpis. Nam tincidunt elit vel sapien euismod, ut malesuada
+                ex interdum. Donec finibus felis ac mi facilisis, eu viverra libero varius. In consectetur scelerisque
+                fermentum. Sed quis metus id enim maximus dictum. Integer convallis, mauris sit amet tristique mattis,
+                tortor elit facilisis dui, eu tincidunt massa massa vel turpis. Quisque quis risus et nisl gravida
+                rhoncus. Aliquam bibendum justo a augue ultricies, id ullamcorper justo egestas. Nulla facilisi.
+            </p>
+        </div>
+        <div style="page-break-before: always">
+
+        </div>
+        <div>
+            <h2>Sampled Transactions</h2>
+            <div style="width: 100%; display: flex; flex-direction: column;">
+                <div style="flex: 1;">
+                    <div style="display: flex; width: 50%; ">
+                        <p style="width: 50%; margin: 0%;">Credit Samples Requested: </p>
+                        <p style="width: 50%; margin: 0%;">{creditRequested}</p>
+                    </div>
+                    <div style="display: flex; width: 50%;">
+                        <p style="width: 50%; margin: 0%;">Credit Samples Actual: </p>
+                        <p style="width: 50%; margin: 0%;">{creditActual}</p>
+                    </div>
+                    <div style="display: flex; width: 50%;">
+                        <p style="width: 50%; margin: 0%;">Debit Samples Requested: </p>
+                        <p style="width: 50%; margin: 0%;">{debitRequested}</p>
+                    </div>
+                    <div style="display: flex; width: 50%;">
+                        <p style="width: 50%; margin: 0%;">Debit Samples Actual: </p>
+                        <p style="width: 50%; margin: 0%;">{debitActual}</p>
+                    </div>
+                    <div style="display: flex; width: 50%;">
+                        <p style="width: 50%; margin: 0%;">Materiality Input: </p>
+                        <p style="width: 50%; margin: 0%;">{materialityInput}</p>
+                    </div>
+                </div>
+            </div>
+            <div style="width: 100%; display: flex; flex-direction: column; ">
+
+                <table style="font-size: 0.6rem; text-align: center;">
+                    <tr style="border: 1px solid black;">
+                        <th style="width: 5%">Id</th>
+                        <th style="width: 10%;">AccountName</th>
+                        <th style="width: 10%;">AccountNum</th>
+                        <th style="width: 10%;">ExternalId</th>
+                        <th style="width: 10%;">Source</th>
+                        <th style="width: 10%;">Date</th>
+                        <th style="width: 30%;">Description</th>
+                        <th style="width: 7.5%;">Debit</th>
+                        <th style="width: 7.5%;">Credit</th>
+                    </tr>
+                    {sampledTransactions}
+                </table>
+            </div>
+        </div>
+        <div style="page-break-before: always">
+
+        </div>
+        <div>
+            <h2>Selected Accounts:</h2>
+            <div style="margin: 1rem; width: 100%; display: flex; flex-direction: column; ">
+
+                <table style="font-size: 0.6rem; text-align: center;">
+                    <tr style="border: 1px solid black;">
+                        <th style="width: 30%;">AccountNum</th>
+                        <th style="width: 30%;">AccountName</th>
+                        <th style="width: 15%;">Debit</th>
+                        <th style="width: 15%;">Credit</th>
+                    </tr>
+                    {selectedAccounts}
+                </table>
+            </div>
+        </div>
+
+</body>
+
+</html>

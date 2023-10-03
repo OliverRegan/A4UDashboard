@@ -1,18 +1,22 @@
 import { Button } from "@mui/material"
-import ExportPDF from "./JS/ExportPDF"
+import Export from "./JS/Export"
 
 const ExportBar = (props) => {
     return (
-        <div className="col-12">
+        <div className="col-12 px-0">
             <div className="card">
                 <div className="card__body">
-                    <Button variant="contained" color="primary">Export As Excel</Button>
-                    <Button variant="contained" color="success">Export As CSV</Button>
-                    <Button variant="contained" color="error" onClick={
-                        () => {
-                            ExportPDF(props.audit)
-                        }
-                    }>Export As PDF</Button>
+                    <div className="w-1/2 mx-auto flex justify-around">
+                        <Button variant="contained" color="primary" onClick={
+                            () => {
+                                Export(props.audit, "xlsx")
+                            }}>Xlsx Export</Button>
+                        <Button variant="contained" color="error" onClick={
+                            () => {
+                                Export(props.audit, "pdf")
+                            }
+                        }>PDF Export</Button>
+                    </div>
                 </div>
             </div>
         </div>

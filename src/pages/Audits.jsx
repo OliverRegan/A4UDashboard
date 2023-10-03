@@ -277,7 +277,7 @@ const Audits = (props) => {
                             process: {
                                 onload: (res) => {
                                     let data = JSON.parse(res)
-                                    console.log(data.accounts)
+                                    console.log(data)
                                     // props.handleUpload(res);
                                     let accounts = data.accounts
                                     accounts.forEach((account) => {

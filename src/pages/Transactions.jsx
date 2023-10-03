@@ -81,6 +81,7 @@ const Transactions = (props) => {
             })
                 .then((res) => res.json())
                 .then((response) => {
+                    console.log(response)
                     let transactions = []
                     response.transactions.forEach(transaction => {
                         let transNew = transaction
@@ -95,7 +96,7 @@ const Transactions = (props) => {
                             ...values,
                             sampledTransactions: transactions,
                             credit: seedObj.credit,
-                            debit: seedObj.credit,
+                            debit: seedObj.debit,
                             materiality: seedObj.materiality,
                             seed: seedObj.seed,
                             samplePercentage: response.samplePercentage,
@@ -325,7 +326,13 @@ const Transactions = (props) => {
                                     </div>
                                 </div>
                             </div>
-                            {/* <ExportBar audit={audit} /> */}
+                            {
+                                audit.auditDetails.sampling.sampledTransactions.length > 0 ?
+                                    <ExportBar audit={audit} />
+                                    :
+                                    <></>
+                            }
+
                         </div>
                     </>
                     :

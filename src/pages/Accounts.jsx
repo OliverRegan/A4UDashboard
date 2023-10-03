@@ -66,6 +66,7 @@ const Accounts = (props) => {
             populationCr += Math.abs(acc.totalCredit)
             populationDb += Math.abs(acc.totalDebit)
         })
+        console.log(count)
         dispatch(setAudit([audit.file, audit.accounts, {
             ...audit.auditDetails,
             accounts: {
