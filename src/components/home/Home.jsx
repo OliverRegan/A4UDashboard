@@ -5,7 +5,7 @@ const Home = () => {
     return (
         <>
             {/* <Redirect to="/dashboard" /> */}
-            {/* <Redirect to="/currentAudits" /> */}
+            <Redirect to="/currentAudits" />
         </>
     )
 }

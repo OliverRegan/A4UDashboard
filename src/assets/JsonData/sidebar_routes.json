@@ -1,10 +1,5 @@
 [
     {
-        "display_name": "Dashboard",
-        "route": "/dashboard",
-        "icon": "bx bx-home"
-    },
-    {
         "display_name": "Current Audits",
         "route": "/currentAudits",
         "icon": "bx bx-spreadsheet"

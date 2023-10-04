@@ -9,7 +9,7 @@ import Dropdown from '../dropdown/Dropdown'
 import ThemeMenu from '../thememenu/ThemeMenu'
 import notifications from '../../assets/JsonData/notification.json'
 import user_menu from '../../assets/JsonData/user_menus.json'
-import { useAuth } from 'oidc-react'
+// import { useAuth } from 'oidc-react'
 
 const user = {
     display_name: 'Matthew Harris',
@@ -22,7 +22,7 @@ const Sidebar = props => {
 
     const activeItem = sidebar_items.findIndex(item => item.route === props.location.pathname)
 
-    const auth = useAuth();
+    // const auth = useAuth();
     // const auth = {
     //     userData: {
     //         profile: {
@@ -44,7 +44,7 @@ const Sidebar = props => {
                     <img src={user.image} alt="" />
                 </div>
                 <div className="topnav__right title69">
-                    {auth.userData?.profile.given_name} {auth.userData?.profile.family_name}
+                    {/* {auth.userData?.profile.given_name} {auth.userData?.profile.family_name} */}
                 </div><br />
 
             </div>
