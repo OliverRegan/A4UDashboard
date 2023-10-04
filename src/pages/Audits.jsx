@@ -20,7 +20,8 @@ import { FilePond } from 'react-filepond'
 // Import FilePond styles
 import 'filepond/dist/filepond.min.css'
 import { Redirect } from 'react-router-dom/cjs/react-router-dom.min';
-// import { useAuth } from 'oidc-react';
+
+import { useMsal } from '@azure/msal-react';
 
 const customStyles = {
     content: {
@@ -52,7 +53,8 @@ const Audits = (props) => {
     const audit = useSelector((state) => state.SaveAudit)
     const [file, setFile] = useState(audit.file)
 
-    // const auth = useAuth()
+    const { instance } = useMsal()
+    const profile = instance.getActiveAccount()
 
     Modal.setAppElement('body');
 
@@ -70,12 +72,6 @@ const Audits = (props) => {
 
     function closeModal() {
         setIsOpen(false);
-    }
-
-    function handleUpload(data) {
-        // ID's for MUI
-
-
     }
 
     const openModal = (callback) => {
@@ -294,8 +290,7 @@ const Audits = (props) => {
                                         clientName: "",
                                         financialYear: "",
                                         auditor: {
-                                            // name: auth.userData.profile.name
-                                            name: "No auth atm"
+                                            name: profile.name
                                         },
                                         accounts: {
                                             population: '',
