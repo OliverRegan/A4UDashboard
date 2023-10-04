@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useContext } from 'react'
 
 // Material UI
 import {
@@ -10,22 +10,24 @@ import {
     Button,
     Checkbox
 } from "@mui/material"
+import { DataGrid } from '@mui/x-data-grid';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DesktopDatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import dayjs from 'dayjs';
 import Axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
+
+
 // Formik for searching
-import { Form, Formik, useFormik } from 'formik'
-import values from '../components/utility/Formik/Search/DefaultValues'
-// import validationSchema from '../components/utility/Formik/Search/validationSchema'
+import { useFormik } from 'formik'
 import { setAudit } from '../redux/reducers/SaveAudit';
 import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
-import { DataGrid } from '@mui/x-data-grid';
+import { ResultContext } from '../components/utility/Auth/ResultContext';
 import columns from "../components/utility/GridDefinitions/TransactionColumns"
 
 const Search = (props) => {
-
+    // Get auth result from context
+    const [result, error] = useContext(ResultContext)
     const audit = useSelector((state) => state.SaveAudit)
     const dispatch = useDispatch()
     const [loading, setLoading] = useState(false)
@@ -61,7 +63,12 @@ const Search = (props) => {
                 "Credit": values.credit,
 
             }
-            Axios.post(searchURL, body)
+            let jwt = result.accessToken
+            Axios.post(searchURL, body, {
+                headers: {
+                    'Authorization': `Bearer ${jwt}`
+                }
+            })
                 .then((response) => {
                     let searchedTransactions = [];
                     response.data.transactions.forEach(transaction => {

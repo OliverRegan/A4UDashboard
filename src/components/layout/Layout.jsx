@@ -13,12 +13,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import ThemeAction from '../../redux/actions/ThemeAction'
 import { useMsalAuthentication, useMsal, useIsAuthenticated } from '@azure/msal-react'
 import { InteractionType, InteractionStatus } from '@azure/msal-browser'
-import { loginRequest } from '../../authConfig'
 import Authenticating from '../../pages/Authenticating'
+import ResultProvider from '../utility/Auth/ResultContext'
 
 const Layout = (props) => {
 
-    const { result, error } = useMsalAuthentication(InteractionType.Redirect, loginRequest)
 
     const { instance, inProgress } = useMsal();
 
@@ -28,9 +27,6 @@ const Layout = (props) => {
 
     const dispatch = useDispatch()
 
-    useEffect(() => {
-        console.log(result, error)
-    }, [result, error])
 
     useEffect(() => {
         const themeClass = localStorage.getItem('themeMode', 'theme-mode-light')
@@ -45,22 +41,24 @@ const Layout = (props) => {
     return (
 
         <BrowserRouter>
-            {isAuthenticated && inProgress == InteractionStatus.None ?
-                <Route render={(props) => (
-                    <div className={`layout ${themeReducer.mode} ${themeReducer.color}`}>
-                        <Sidebar {...props} />
-                        <div className="layout__content">
-                            <TopNav />
-                            {/* <div className="layout__content-main"> */}
-                            <div className='mx-5'>
-                                <Routes />
+            <ResultProvider>
+                {isAuthenticated && inProgress == InteractionStatus.None ?
+                    <Route render={(props) => (
+                        <div className={`layout ${themeReducer.mode} ${themeReducer.color}`}>
+                            <Sidebar {...props} />
+                            <div className="layout__content">
+                                <TopNav />
+                                {/* <div className="layout__content-main"> */}
+                                <div className='mx-5'>
+                                    <Routes />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )} />
-                :
-                <Authenticating />
-            }
+                    )} />
+                    :
+                    <Authenticating />
+                }
+            </ResultProvider>
         </BrowserRouter>
 
     )

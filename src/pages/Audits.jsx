@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import axios from 'axios';
 import '../components/topnav/topnav.css';
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from 'react-modal';
@@ -20,7 +21,9 @@ import { FilePond } from 'react-filepond'
 // Import FilePond styles
 import 'filepond/dist/filepond.min.css'
 import { Redirect } from 'react-router-dom/cjs/react-router-dom.min';
+import { loginRequest } from '../authConfig'
 
+import ResultProvider, { ResultContext } from '../components/utility/Auth/ResultContext';
 import { useMsal } from '@azure/msal-react';
 
 const customStyles = {
@@ -53,8 +56,13 @@ const Audits = (props) => {
     const audit = useSelector((state) => state.SaveAudit)
     const [file, setFile] = useState(audit.file)
 
-    const { instance } = useMsal()
+    const { instance, inProgress } = useMsal()
     const profile = instance.getActiveAccount()
+
+    // Get auth result from context
+    const [result, error] = useContext(ResultContext)
+
+    console.log(result)
 
     Modal.setAppElement('body');
 
@@ -94,77 +102,7 @@ const Audits = (props) => {
     async function validateFileRemoval() {
         return await checkRemove() ? dispatch(setAudit([{ fileName: '', fileSize: '' }, [], audit.auditDetails])) : ''
     }
-    // async function validateAuditRemoval() {
-    //     return await checkRemove() ? dispatch(setAudit([
-    //         {
-    //             fileName: '',
-    //             fileSize: ''
-    //         },
-    //         [],
-    //         {
-    //             auditName: "",
-    //             clientName: "",
-    //             financialYear: "",
-    //             accounts: {
-    //                 population: '',
-    //                 selectedAccounts: [],
-    //                 transactionNum: '',
-    //                 creditAmount: '',
-    //                 debitAmount: ''
-    //             },
-    //             sampling: {
-    //                 sampledTransactions: [],
-    //                 useSeed: false,
-    //                 credit: '',
-    //                 debit: '',
-    //                 materiality: '',
-    //                 seedInput: '',
-    //                 seed: '',
-    //                 sampleInterval: '',
-    //                 samplePercentage: ''
-    //             },
-    //             search: {
-    //                 searchedTransactions: [],
-    //                 type: {
-    //                     debit: false,
-    //                     credit: false
-    //                 },
-    //                 minAmount: '',
-    //                 maxAmount: '',
-    //                 startDateString: '',
-    //                 endDateString: '',
-    //                 startDate: null,
-    //                 endDate: null,
-    //                 description: '',
-    //             },
-    //             recurring: {
-    //                 recurringTransactions: [],
-    //                 identifierTransactions: [],
-    //                 type: {
-    //                     debit: false,
-    //                     credit: false
-    //                 },
-    //                 recurrence: {
-    //                     daily: false,
-    //                     weekly: false,
-    //                     monthly: false,
-    //                     quarterly: false,
-    //                     biYearly: false,
-    //                     yearly: false
-    //                 },
-    //                 minAmount: '',
-    //                 maxAmount: '',
-    //                 startDateString: '',
-    //                 endDateString: '',
-    //                 startDate: null,
-    //                 endDate: null,
-    //                 description: '',
-    //                 useExact: false,
-    //                 exactAmount: '',
-    //                 percentage: ''
-    //             }
-    //         }])) : ''
-    // }
+
 
     function formatBytes(bytes, decimals) {
         if (bytes == 0) return '0 Bytes';
@@ -174,6 +112,115 @@ const Audits = (props) => {
             i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
+
+    const processFile = (fieldName, file, metadata, load, error, progress, abort) => {
+        const formData = new FormData();
+        formData.append(fieldName, file, file.name);
+
+        let jwt = result.accessToken
+
+        axios.post(process.env.REACT_APP_BACKEND_URL + "/audit/excel", formData, {
+            headers: {
+                'Authorization': `Bearer ${jwt}`,
+            },
+            onUploadProgress: (e) => {
+                progress(e.lengthComputable, e.loaded, e.total);
+            }
+        })
+            .then((response) => {
+                let data = response.data
+
+                // props.handleUpload(res);
+                let accounts = data.accounts
+                accounts.forEach((account) => {
+                    account['id'] = accounts.indexOf(account)
+                })
+                // Pull needed file details
+                let fileData = {
+                    fileName: data.fileName,
+                    fileSize: data.fileSize
+                }
+
+                dispatch(setAudit([fileData, accounts, {
+                    auditName: "",
+                    clientName: "",
+                    financialYear: "",
+                    auditor: {
+                        name: profile.name
+                    },
+                    accounts: {
+                        population: '',
+                        selectedAccounts: [],
+                        transactionNum: '',
+                        creditAmount: '',
+                        debitAmount: ''
+                    },
+                    sampling: {
+                        sampledTransactions: [],
+                        useSeed: false,
+                        credit: '',
+                        debit: '',
+                        materiality: '',
+                        seedInput: '',
+                        seed: '',
+                        sampleInterval: '',
+                        samplePercentage: ''
+                    },
+                    search: {
+                        searchedTransactions: [],
+                        type: {
+                            debit: false,
+                            credit: false
+                        },
+                        minAmount: '',
+                        maxAmount: '',
+                        startDateString: '',
+                        endDateString: '',
+                        startDate: null,
+                        endDate: null,
+                        description: '',
+                    },
+                    recurring: {
+                        recurringTransactions: [],
+                        identifierTransactions: [],
+                        type: {
+                            debit: false,
+                            credit: false
+                        },
+                        recurrence: {
+                            daily: false,
+                            weekly: false,
+                            monthly: false,
+                            quarterly: false,
+                            biYearly: false,
+                            yearly: false
+                        },
+                        minAmount: '',
+                        maxAmount: '',
+                        startDateString: '',
+                        endDateString: '',
+                        startDate: null,
+                        endDate: null,
+                        description: '',
+                        useExact: false,
+                        exactAmount: '',
+                        percentage: ''
+                    }
+                }]))
+                load(response.data);
+            })
+            .catch((err) => {
+                console.log(err);
+                console.log(jwt);
+                abort();
+            });
+
+
+        // onload: (res) => {
+        //     url: process.env.REACT_APP_BACKEND_URL + "/audit/excel",
+        //      
+    }
+
 
     return (
         <div>
@@ -269,90 +316,7 @@ const Audits = (props) => {
                         dropOnElement
                         labelInvalidField
                         server={{
-                            url: process.env.REACT_APP_BACKEND_URL + "/audit/excel",
-                            process: {
-                                onload: (res) => {
-                                    let data = JSON.parse(res)
-                                    console.log(data)
-                                    // props.handleUpload(res);
-                                    let accounts = data.accounts
-                                    accounts.forEach((account) => {
-                                        account['id'] = accounts.indexOf(account)
-                                    })
-                                    // Pull needed file details
-                                    let fileData = {
-                                        fileName: data.fileName,
-                                        fileSize: data.fileSize
-                                    }
-
-                                    dispatch(setAudit([fileData, accounts, {
-                                        auditName: "",
-                                        clientName: "",
-                                        financialYear: "",
-                                        auditor: {
-                                            name: profile.name
-                                        },
-                                        accounts: {
-                                            population: '',
-                                            selectedAccounts: [],
-                                            transactionNum: '',
-                                            creditAmount: '',
-                                            debitAmount: ''
-                                        },
-                                        sampling: {
-                                            sampledTransactions: [],
-                                            useSeed: false,
-                                            credit: '',
-                                            debit: '',
-                                            materiality: '',
-                                            seedInput: '',
-                                            seed: '',
-                                            sampleInterval: '',
-                                            samplePercentage: ''
-                                        },
-                                        search: {
-                                            searchedTransactions: [],
-                                            type: {
-                                                debit: false,
-                                                credit: false
-                                            },
-                                            minAmount: '',
-                                            maxAmount: '',
-                                            startDateString: '',
-                                            endDateString: '',
-                                            startDate: null,
-                                            endDate: null,
-                                            description: '',
-                                        },
-                                        recurring: {
-                                            recurringTransactions: [],
-                                            identifierTransactions: [],
-                                            type: {
-                                                debit: false,
-                                                credit: false
-                                            },
-                                            recurrence: {
-                                                daily: false,
-                                                weekly: false,
-                                                monthly: false,
-                                                quarterly: false,
-                                                biYearly: false,
-                                                yearly: false
-                                            },
-                                            minAmount: '',
-                                            maxAmount: '',
-                                            startDateString: '',
-                                            endDateString: '',
-                                            startDate: null,
-                                            endDate: null,
-                                            description: '',
-                                            useExact: false,
-                                            exactAmount: '',
-                                            percentage: ''
-                                        }
-                                    }]))
-                                },
-                            }
+                            process: processFile,
                         }}
                         name="file"
                         labelIdle='<p>Drag & Drop your files or <span class="filepond--label-action">Browse</span><br />Only accepts .xlsx files</p>'

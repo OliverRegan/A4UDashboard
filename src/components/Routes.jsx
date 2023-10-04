@@ -25,7 +25,7 @@ const Routes = (props) => {
     return (
         <Switch>
 
-            <Route index path='/dashboard' exact component={Dashboard} />
+            <Route index path='/dashboard' exact component={Home} />
             <Route path='/currentAudits' component={() => <Audits
                 files={files}
                 setFiles={setFiles}

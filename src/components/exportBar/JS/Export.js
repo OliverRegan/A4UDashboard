@@ -1,13 +1,14 @@
 // import auditMapper from "./auditMapper"
 import Axios from 'axios';
 
-function Export(audit, type) {
+function Export(audit, type, token) {
     let URL = process.env.REACT_APP_BACKEND_URL + "/export/" + type
     let body = JSON.stringify(audit);
     console.log(audit)
     Axios.post(URL, body, {
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         },
         responseType: 'arraybuffer', // Set the responseType to 'arraybuffer' to handle binary data
 

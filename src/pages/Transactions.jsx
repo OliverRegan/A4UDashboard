@@ -1,17 +1,11 @@
-import React, { useRef, useState } from 'react';
-import Table from '../components/table/Table'
-import customerList from '../assets/JsonData/customers-list.json'
+import React, { useRef, useState, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { set } from "../redux/reducers/SaveSample";
-import Axios from 'axios';
-import { setSeedCode } from '../redux/reducers/SeedCode';
-import { JsonToExcel } from "react-json-to-excel";
-import ReactDOMServer from 'react-dom/server';
-import html2pdf from 'html2pdf.js/dist/html2pdf.min';
+import axios from 'axios';
 import { useFormik } from 'formik';
 import { setAudit } from '../redux/reducers/SaveAudit';
 import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
 import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
+import { ResultContext } from '../components/utility/Auth/ResultContext';
 import { TextField, Button, InputAdornment, Box, Typography, Checkbox } from '@mui/material';
 import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 import "../../src/assets/css/excelToJson.css"
@@ -40,13 +34,16 @@ function getSeedObj(seed) {
 
 
 const Transactions = (props) => {
-
+    // Get auth result from context
+    const [authResult, authError] = useContext(ResultContext)
     // Revamped stuff
     const audit = useSelector((state) => state.SaveAudit)
     const dispatch = useDispatch()
 
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+
+
 
     const formik = useFormik({
         initialValues: {
@@ -71,16 +68,16 @@ const Transactions = (props) => {
                 "CreditIn": values.credit === '' ? 0 : values.credit,
                 "SeedCode": values.seedInput === '' ? '0' : values.seedInput, // It needs to be a string and don't ask why
             }
-            console.log(body)
-            fetch(transactionsUrl, {
+            let jwt = authResult.accessToken
+            axios.post(transactionsUrl, body, {
                 method: "POST",
                 headers: {
-                    "Content-type": "application/json"
-                },
-                body: JSON.stringify(body)
+                    "Content-type": "application/json",
+                    'Authorization': `Bearer ${jwt}`
+                }
             })
-                .then((res) => res.json())
-                .then((response) => {
+                .then((res) => {
+                    let response = res.data
                     console.log(response)
                     let transactions = []
                     response.transactions.forEach(transaction => {
@@ -135,18 +132,6 @@ const Transactions = (props) => {
         setIsLoading(false)
     }
 
-    const uniqueFileName = require('unique-filename');
-
-    // let excelMetaData = [
-    //     {
-    //         "User": "Example User",
-    //         "Seed Code": seedCode,
-    //         "Date": new Date().getHours() + ":" + (new Date().getMinutes() < 10 ? "0" : "") + new Date().getMinutes() + " "
-    //             + new Date().getDate() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getFullYear(),
-    //         "Number of Sampled": props.sampledTransactions.length
-
-    //     },
-    //     ...props.sampledTransactions]
 
     return (
         <div className='ml-5'>

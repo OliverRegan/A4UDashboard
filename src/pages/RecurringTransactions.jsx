@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
+
 import "./css/pages.css"
 // Material UI
 import {
@@ -24,6 +25,7 @@ import columns from "../components/utility/GridDefinitions/TransactionColumns"
 
 import TransactionModal from '../components/transactionModal/TransactionModal';
 import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
+import { ResultContext } from '../components/utility/Auth/ResultContext';
 
 import Axios from 'axios';
 
@@ -35,6 +37,10 @@ import { useFormik } from 'formik'
 
 
 const RecurringTransactions = (props) => {
+
+    // Get auth result from context
+    const [result, error] = useContext(ResultContext)
+
     const audit = useSelector((state) => state.SaveAudit)
     // console.log(audit)
     const dispatch = useDispatch()
@@ -94,8 +100,12 @@ const RecurringTransactions = (props) => {
                 "ExactAmount": values.exactAmount === '' ? 0 : values.exactAmount
 
             }
-            console.log(body)
-            Axios.post(searchURL, body)
+            let jwt = result.accessToken
+            Axios.post(searchURL, body, {
+                headers: {
+                    'Authorization': `Bearer ${jwt}`
+                }
+            })
                 .then((response) => {
                     console.log(response)
                     let recurringTransactions = [];
