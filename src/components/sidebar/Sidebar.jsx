@@ -9,6 +9,7 @@ import Dropdown from '../dropdown/Dropdown'
 import ThemeMenu from '../thememenu/ThemeMenu'
 import notifications from '../../assets/JsonData/notification.json'
 import user_menu from '../../assets/JsonData/user_menus.json'
+import { useMsal } from '@azure/msal-react'
 // import { useAuth } from 'oidc-react'
 
 const user = {
@@ -22,14 +23,9 @@ const Sidebar = props => {
 
     const activeItem = sidebar_items.findIndex(item => item.route === props.location.pathname)
 
-    // const auth = useAuth();
-    // const auth = {
-    //     userData: {
-    //         profile: {
-    //             given_name: "Not Auth service"
-    //         }
-    //     }
-    // }
+    const auth = useMsal()
+
+    console.log(auth)
 
 
 
