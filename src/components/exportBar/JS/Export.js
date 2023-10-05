@@ -8,6 +8,7 @@ function Export(audit, type, token) {
     Axios.post(URL, body, {
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'arraybuffer',
             'Authorization': `Bearer ${token}`
         },
         responseType: 'arraybuffer', // Set the responseType to 'arraybuffer' to handle binary data
@@ -23,6 +24,7 @@ function Export(audit, type, token) {
         })
         .then(response => {
             if (type === "pdf") {
+                console.log(response)
                 const pdfData = new Uint8Array(response.data);
                 // Create a Blob with the binary PDF data
                 const blob = new Blob([response.data], { type: 'application/pdf' });
