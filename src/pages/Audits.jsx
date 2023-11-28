@@ -1,12 +1,12 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import axios from 'axios';
 import '../components/topnav/topnav.css';
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from 'react-modal';
 
-import { Link } from 'react-router-dom/cjs/react-router-dom.min';
+import { Link } from 'react-router-dom';
 
-import { Formik, useFormik } from 'formik';
+import { useFormik } from 'formik';
 import {
     Button,
     TextField,
@@ -20,10 +20,8 @@ import { FilePond } from 'react-filepond'
 
 // Import FilePond styles
 import 'filepond/dist/filepond.min.css'
-import { Redirect } from 'react-router-dom/cjs/react-router-dom.min';
-import { loginRequest } from '../authConfig'
+import useGetToken from '../components/utility/Auth/useGetToken';
 
-import ResultProvider, { ResultContext } from '../components/utility/Auth/ResultContext';
 import { useMsal } from '@azure/msal-react';
 
 const customStyles = {
@@ -56,13 +54,9 @@ const Audits = (props) => {
     const audit = useSelector((state) => state.SaveAudit)
     const [file, setFile] = useState(audit.file)
 
-    const { instance, inProgress } = useMsal()
+    const { instance } = useMsal()
     const profile = instance.getActiveAccount()
-
-    // Get auth result from context
-    const [result, error] = useContext(ResultContext)
-
-    console.log(result)
+    const getToken = useGetToken(instance);
 
     Modal.setAppElement('body');
 
@@ -117,103 +111,103 @@ const Audits = (props) => {
         const formData = new FormData();
         formData.append(fieldName, file, file.name);
 
-        let jwt = result.accessToken
-
-        axios.post(process.env.REACT_APP_BACKEND_URL + "/audit/excel", formData, {
-            headers: {
-                'Authorization': `Bearer ${jwt}`,
-            },
-            onUploadProgress: (e) => {
-                progress(e.lengthComputable, e.loaded, e.total);
-            }
-        })
-            .then((response) => {
-                let data = response.data
-
-                // props.handleUpload(res);
-                let accounts = data.accounts
-                accounts.forEach((account) => {
-                    account['id'] = accounts.indexOf(account)
-                })
-                // Pull needed file details
-                let fileData = {
-                    fileName: data.fileName,
-                    fileSize: data.fileSize
+        getToken.then((jwt) => {
+            axios.post(process.env.REACT_APP_BACKEND_URL + "/audit/excel", formData, {
+                headers: {
+                    'Authorization': `Bearer ${jwt}`,
+                },
+                onUploadProgress: (e) => {
+                    progress(e.lengthComputable, e.loaded, e.total);
                 }
-
-                dispatch(setAudit([fileData, accounts, {
-                    auditName: "",
-                    clientName: "",
-                    financialYear: "",
-                    auditor: {
-                        name: profile.name
-                    },
-                    accounts: {
-                        population: '',
-                        selectedAccounts: [],
-                        transactionNum: '',
-                        creditAmount: '',
-                        debitAmount: ''
-                    },
-                    sampling: {
-                        sampledTransactions: [],
-                        useSeed: false,
-                        credit: '',
-                        debit: '',
-                        materiality: '',
-                        seedInput: '',
-                        seed: '',
-                        sampleInterval: '',
-                        samplePercentage: ''
-                    },
-                    search: {
-                        searchedTransactions: [],
-                        type: {
-                            debit: false,
-                            credit: false
-                        },
-                        minAmount: '',
-                        maxAmount: '',
-                        startDateString: '',
-                        endDateString: '',
-                        startDate: null,
-                        endDate: null,
-                        description: '',
-                    },
-                    recurring: {
-                        recurringTransactions: [],
-                        identifierTransactions: [],
-                        type: {
-                            debit: false,
-                            credit: false
-                        },
-                        recurrence: {
-                            daily: false,
-                            weekly: false,
-                            monthly: false,
-                            quarterly: false,
-                            biYearly: false,
-                            yearly: false
-                        },
-                        minAmount: '',
-                        maxAmount: '',
-                        startDateString: '',
-                        endDateString: '',
-                        startDate: null,
-                        endDate: null,
-                        description: '',
-                        useExact: false,
-                        exactAmount: '',
-                        percentage: ''
-                    }
-                }]))
-                load(response.data);
             })
-            .catch((err) => {
-                console.log(err);
-                console.log(jwt);
-                abort();
-            });
+
+                .then((response) => {
+                    let data = response.data
+
+                    // props.handleUpload(res);
+                    let accounts = data.accounts
+                    accounts.forEach((account) => {
+                        account['id'] = accounts.indexOf(account)
+                    })
+                    // Pull needed file details
+                    let fileData = {
+                        fileName: data.fileName,
+                        fileSize: data.fileSize
+                    }
+
+                    dispatch(setAudit([fileData, accounts, {
+                        auditName: "",
+                        clientName: "",
+                        financialYear: "",
+                        auditor: {
+                            name: profile.name
+                        },
+                        accounts: {
+                            population: '',
+                            selectedAccounts: [],
+                            transactionNum: '',
+                            creditAmount: '',
+                            debitAmount: ''
+                        },
+                        sampling: {
+                            sampledTransactions: [],
+                            useSeed: false,
+                            credit: '',
+                            debit: '',
+                            materiality: '',
+                            seedInput: '',
+                            seed: '',
+                            sampleInterval: '',
+                            samplePercentage: ''
+                        },
+                        search: {
+                            searchedTransactions: [],
+                            type: {
+                                debit: false,
+                                credit: false
+                            },
+                            minAmount: '',
+                            maxAmount: '',
+                            startDateString: '',
+                            endDateString: '',
+                            startDate: null,
+                            endDate: null,
+                            description: '',
+                        },
+                        recurring: {
+                            recurringTransactions: [],
+                            identifierTransactions: [],
+                            type: {
+                                debit: false,
+                                credit: false
+                            },
+                            recurrence: {
+                                daily: false,
+                                weekly: false,
+                                monthly: false,
+                                quarterly: false,
+                                biYearly: false,
+                                yearly: false
+                            },
+                            minAmount: '',
+                            maxAmount: '',
+                            startDateString: '',
+                            endDateString: '',
+                            startDate: null,
+                            endDate: null,
+                            description: '',
+                            useExact: false,
+                            exactAmount: '',
+                            percentage: ''
+                        }
+                    }]))
+                    load(response.data);
+                })
+                .catch((err) => {
+                    console.log(err);
+                    abort();
+                });
+        })
 
 
         // onload: (res) => {

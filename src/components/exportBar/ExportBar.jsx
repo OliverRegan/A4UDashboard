@@ -1,12 +1,13 @@
 import { Button } from "@mui/material"
-import { useContext } from "react"
-import { ResultContext } from "../utility/Auth/ResultContext"
 import Export from "./JS/Export"
+
+import useGetToken from '../utility/Auth/useGetToken';
+import { useMsal } from "@azure/msal-react";
 
 const ExportBar = (props) => {
 
-    // Get auth result from context
-    const [result, error] = useContext(ResultContext)
+    const { instance } = useMsal()
+    const getToken = useGetToken(instance);
 
 
     return (
@@ -16,11 +17,11 @@ const ExportBar = (props) => {
                     <div className="w-1/2 mx-auto flex justify-around">
                         <Button variant="contained" color="primary" onClick={
                             () => {
-                                Export(props.audit, "xlsx", result.accessToken)
+                                Export(props.audit, "xlsx", getToken)
                             }}>Xlsx Export</Button>
                         <Button variant="contained" color="error" onClick={
                             () => {
-                                Export(props.audit, "pdf", result.accessToken)
+                                Export(props.audit, "pdf", getToken)
                             }
                         }>PDF Export</Button>
                     </div>

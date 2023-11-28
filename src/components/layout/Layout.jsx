@@ -4,24 +4,23 @@ import './layout.css'
 
 import Sidebar from '../sidebar/Sidebar'
 import TopNav from '../topnav/TopNav'
-import Routes from '../Routes'
+import Router from '../Router'
 
-import { BrowserRouter, Route } from 'react-router-dom'
+import { BrowserRouter, Outlet, Route, Routes } from 'react-router-dom'
 
 import { useSelector, useDispatch } from 'react-redux'
 
 import ThemeAction from '../../redux/actions/ThemeAction'
-import { useMsalAuthentication, useMsal, useIsAuthenticated } from '@azure/msal-react'
-import { InteractionType, InteractionStatus } from '@azure/msal-browser'
+import { useMsal, useIsAuthenticated } from '@azure/msal-react'
+import { InteractionStatus } from '@azure/msal-browser'
 import Authenticating from '../../pages/Authenticating'
-import ResultProvider from '../utility/Auth/ResultContext'
 
 const Layout = (props) => {
 
 
     const { instance, inProgress } = useMsal();
 
-    const isAuthenticated = useIsAuthenticated();
+    const isAuthenticated = useIsAuthenticated()
 
     const themeReducer = useSelector(state => state.ThemeReducer)
 
@@ -36,31 +35,28 @@ const Layout = (props) => {
         dispatch(ThemeAction.setMode(themeClass))
 
         dispatch(ThemeAction.setColor(colorClass))
-    }, [dispatch])
+
+    }, [dispatch, inProgress, isAuthenticated])
 
     return (
-
-        <BrowserRouter>
-            <ResultProvider>
-                {isAuthenticated && inProgress == InteractionStatus.None ?
-                    <Route render={(props) => (
-                        <div className={`layout ${themeReducer.mode} ${themeReducer.color}`}>
-                            <Sidebar {...props} />
-                            <div className="layout__content">
-                                <TopNav />
-                                {/* <div className="layout__content-main"> */}
-                                <div className='mx-5'>
-                                    <Routes />
-                                </div>
-                            </div>
+        <>
+            {isAuthenticated && inProgress == InteractionStatus.None ?
+                // <Route render={(props) => (
+                <div className={`layout ${themeReducer.mode} ${themeReducer.color}`}>
+                    <Sidebar {...props} />
+                    <div className="layout__content">
+                        <TopNav />
+                        {/* <div className="layout__content-main"> */}
+                        <div className='mx-5'>
+                            <Outlet />
                         </div>
-                    )} />
-                    :
-                    <Authenticating />
-                }
-            </ResultProvider>
-        </BrowserRouter>
-
+                    </div>
+                </div>
+                // )}/>
+                :
+                <Authenticating />
+            }
+        </>
     )
 }
 

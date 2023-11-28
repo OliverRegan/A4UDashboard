@@ -18,7 +18,9 @@ import {
   PaletteColorOptions,
   ThemeProvider,
 } from '@mui/material/styles';
-import Layout from './components/layout/Layout'
+
+import Router from './components/Router';
+
 // OIDC config
 import { AuthProvider, UserManager } from "oidc-react";
 import { OidcClient } from "oidc-client";
@@ -26,6 +28,7 @@ import { IDENTITY_CONFIG_OIDC } from './components/utility/Auth/OIDC-config';
 import { loginRequest, msalConfig } from './authConfig';
 import { EventType, InteractionRequiredAuthError, PublicClientApplication } from '@azure/msal-browser';
 import { MsalProvider, useIsAuthenticated, useMsal } from '@azure/msal-react';
+import { InteractionStatus } from "@azure/msal-browser";
 
 // Redux
 const store = configureStore({
@@ -52,6 +55,12 @@ pca.addEventCallback((event) => {
   }
 });
 
+// Default to using the first account if no account is active on page load
+if (!pca.getActiveAccount() && pca.getAllAccounts().length > 0) {
+  // Account selection logic is app dependent. Adjust as needed for different use cases.
+  pca.setActiveAccount(pca.getAllAccounts()[0]);
+}
+
 
 const AuthContainer = () => {
 
@@ -60,7 +69,7 @@ const AuthContainer = () => {
   const isAuthenticated = useIsAuthenticated();
 
   useEffect(() => {
-    if (!isAuthenticated && !inProgress) {
+    if (!isAuthenticated && inProgress == InteractionStatus.None) {
       instance.ssoSilent(loginRequest)
         .then((response) => {
           instance.setActiveAccount(response.account);
@@ -69,12 +78,13 @@ const AuthContainer = () => {
           console.log(error)
           if (error instanceof InteractionRequiredAuthError) {
             instance.loginRedirect(loginRequest)
+            console.log(error)
           }
         })
     }
-  }, [instance, inProgress, isAuthenticated])
+  }, [instance, inProgress])
 
-  return <Layout />
+  return <Router />
 }
 
 ReactDOM.render(

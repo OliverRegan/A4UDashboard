@@ -22,12 +22,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useFormik } from 'formik'
 import { setAudit } from '../redux/reducers/SaveAudit';
 import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
-import { ResultContext } from '../components/utility/Auth/ResultContext';
+import useGetToken from '../components/utility/Auth/useGetToken';
+import { useMsal } from "@azure/msal-react";
+
 import columns from "../components/utility/GridDefinitions/TransactionColumns"
 
 const Search = (props) => {
-    // Get auth result from context
-    const [result, error] = useContext(ResultContext)
+    const { instance } = useMsal()
+    const getToken = useGetToken(instance);
     const audit = useSelector((state) => state.SaveAudit)
     const dispatch = useDispatch()
     const [loading, setLoading] = useState(false)
@@ -63,37 +65,39 @@ const Search = (props) => {
                 "Credit": values.credit,
 
             }
-            let jwt = result.accessToken
-            Axios.post(searchURL, body, {
-                headers: {
-                    'Authorization': `Bearer ${jwt}`
-                }
-            })
-                .then((response) => {
-                    let searchedTransactions = [];
-                    response.data.transactions.forEach(transaction => {
-                        let transNew = transaction
-                        transNew.id = response.data.transactions.indexOf(transaction)
-                        searchedTransactions.push(transNew)
+            getToken.then((jwt) => {
+                Axios.post(searchURL, body, {
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`
+                    }
+                })
+
+                    .then((response) => {
+                        let searchedTransactions = [];
+                        response.data.transactions.forEach(transaction => {
+                            let transNew = transaction
+                            transNew.id = response.data.transactions.indexOf(transaction)
+                            searchedTransactions.push(transNew)
+                        })
+                        dispatch(setAudit([audit.file, audit.accounts, {
+                            ...audit.auditDetails,
+                            search: {
+                                ...audit.auditDetails.search,
+                                ...values,
+                                searchedTransactions: searchedTransactions,
+                                endDate: (values.endDate != null ? values.endDate.toString() : null),
+                                startDate: (values.startDate != null ? values.startDate.toString() : null),
+
+                            }
+                        }]))
+                        setErr(false)
+                        setLoading(false)
                     })
-                    dispatch(setAudit([audit.file, audit.accounts, {
-                        ...audit.auditDetails,
-                        search: {
-                            ...audit.auditDetails.search,
-                            ...values,
-                            searchedTransactions: searchedTransactions,
-                            endDate: (values.endDate != null ? values.endDate.toString() : null),
-                            startDate: (values.startDate != null ? values.startDate.toString() : null),
 
-                        }
-                    }]))
-                    setErr(false)
-                    setLoading(false)
-                })
-
-                .catch((err) => {
-                    setErr(true)
-                })
+                    .catch((err) => {
+                        setErr(true)
+                    })
+            })
 
             setAlreadySearched(true)
         }

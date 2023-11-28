@@ -5,7 +5,7 @@ import { Typography, Box } from "@mui/material"
 import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useSelector, useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom/cjs/react-router-dom'
+import { Link } from 'react-router-dom'
 import { setAudit } from '../redux/reducers/SaveAudit'
 
 const columns = [
@@ -66,7 +66,6 @@ const Accounts = (props) => {
             populationCr += Math.abs(acc.totalCredit)
             populationDb += Math.abs(acc.totalDebit)
         })
-        console.log(count)
         dispatch(setAudit([audit.file, audit.accounts, {
             ...audit.auditDetails,
             accounts: {

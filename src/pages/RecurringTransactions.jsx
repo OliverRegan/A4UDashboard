@@ -25,7 +25,10 @@ import columns from "../components/utility/GridDefinitions/TransactionColumns"
 
 import TransactionModal from '../components/transactionModal/TransactionModal';
 import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
-import { ResultContext } from '../components/utility/Auth/ResultContext';
+
+import useGetToken from '../components/utility/Auth/useGetToken';
+import { useMsal } from "@azure/msal-react";
+
 
 import Axios from 'axios';
 
@@ -38,11 +41,10 @@ import { useFormik } from 'formik'
 
 const RecurringTransactions = (props) => {
 
-    // Get auth result from context
-    const [result, error] = useContext(ResultContext)
+    const { instance } = useMsal()
+    const getToken = useGetToken(instance);
 
     const audit = useSelector((state) => state.SaveAudit)
-    // console.log(audit)
     const dispatch = useDispatch()
     const [loading, setLoading] = useState(false)
     const [alreadySearched, setAlreadySearched] = useState(false)
@@ -100,55 +102,57 @@ const RecurringTransactions = (props) => {
                 "ExactAmount": values.exactAmount === '' ? 0 : values.exactAmount
 
             }
-            let jwt = result.accessToken
-            Axios.post(searchURL, body, {
-                headers: {
-                    'Authorization': `Bearer ${jwt}`
-                }
-            })
-                .then((response) => {
-                    console.log(response)
-                    let recurringTransactions = [];
-                    let identifierTransactions = [];
-                    response.data.transactions.forEach(transaction => {
-                        let transNew = transaction
-                        let identifierNew = transNew[0]
-                        transNew.id = response.data.transactions.indexOf(transaction)
-                        identifierNew.id = response.data.transactions.indexOf(transaction)
-                        recurringTransactions.push(transNew)
-                        identifierTransactions.push(transNew[0])
-                    })
-                    dispatch(setAudit([audit.file, audit.accounts, {
-                        ...audit.auditDetails,
-                        recurring: {
-                            ...audit.auditDetails.recurring,
-                            ...values,
-                            recurringTransactions: recurringTransactions,
-                            identifierTransactions: identifierTransactions,
-                            recurrence: {
-                                daily: values.daily,
-                                weekly: values.weekly,
-                                monthly: values.monthly,
-                                quarterly: values.quarterly,
-                                biYearly: values.biYearly,
-                                yearly: values.yearly
-                            },
-                            type: {
-                                credit: values.credit,
-                                debit: values.debit
-                            },
-                            endDate: (values.endDate != null ? values.endDate.toString() : values.endDate),
-                            startDate: (values.startDate != null ? values.startDate.toString() : values.startDate),
-                        }
-                    }]))
-                    setErr(false)
-                    setLoading(false)
+            getToken((jwt) => {
+                Axios.post(searchURL, body, {
+                    headers: {
+                        'Authorization': `Bearer ${jwt}`
+                    }
                 })
 
-                .catch((err) => {
-                    setErr(true)
-                    console.log(err)
-                })
+                    .then((response) => {
+                        console.log(response)
+                        let recurringTransactions = [];
+                        let identifierTransactions = [];
+                        response.data.transactions.forEach(transaction => {
+                            let transNew = transaction
+                            let identifierNew = transNew[0]
+                            transNew.id = response.data.transactions.indexOf(transaction)
+                            identifierNew.id = response.data.transactions.indexOf(transaction)
+                            recurringTransactions.push(transNew)
+                            identifierTransactions.push(transNew[0])
+                        })
+                        dispatch(setAudit([audit.file, audit.accounts, {
+                            ...audit.auditDetails,
+                            recurring: {
+                                ...audit.auditDetails.recurring,
+                                ...values,
+                                recurringTransactions: recurringTransactions,
+                                identifierTransactions: identifierTransactions,
+                                recurrence: {
+                                    daily: values.daily,
+                                    weekly: values.weekly,
+                                    monthly: values.monthly,
+                                    quarterly: values.quarterly,
+                                    biYearly: values.biYearly,
+                                    yearly: values.yearly
+                                },
+                                type: {
+                                    credit: values.credit,
+                                    debit: values.debit
+                                },
+                                endDate: (values.endDate != null ? values.endDate.toString() : values.endDate),
+                                startDate: (values.startDate != null ? values.startDate.toString() : values.startDate),
+                            }
+                        }]))
+                        setErr(false)
+                        setLoading(false)
+                    })
+
+                    .catch((err) => {
+                        setErr(true)
+                        console.log(err)
+                    })
+            })
 
             setAlreadySearched(true)
         }

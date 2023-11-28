@@ -1,18 +1,20 @@
-import React, { useRef, useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import { setAudit } from '../redux/reducers/SaveAudit';
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import { DataGrid, } from '@mui/x-data-grid';
 import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
-import { ResultContext } from '../components/utility/Auth/ResultContext';
-import { TextField, Button, InputAdornment, Box, Typography, Checkbox } from '@mui/material';
-import { Link } from 'react-router-dom/cjs/react-router-dom.min';
+import { TextField, Button, InputAdornment, Checkbox } from '@mui/material';
+import { Link } from 'react-router-dom';
 import "../../src/assets/css/excelToJson.css"
 import '../components/topnav/topnav.css';
 import "react-datepicker/dist/react-datepicker.css";
 import columns from "../components/utility/GridDefinitions/TransactionColumns"
 import ExportBar from '../components/exportBar/ExportBar';
+
+import useGetToken from '../components/utility/Auth/useGetToken';
+import { useMsal } from "@azure/msal-react";
 
 function getSeedObj(seed) {
     if (seed == "No Transactions Sampled") {
@@ -34,8 +36,6 @@ function getSeedObj(seed) {
 
 
 const Transactions = (props) => {
-    // Get auth result from context
-    const [authResult, authError] = useContext(ResultContext)
     // Revamped stuff
     const audit = useSelector((state) => state.SaveAudit)
     const dispatch = useDispatch()
@@ -43,7 +43,8 @@ const Transactions = (props) => {
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
-
+    const { instance } = useMsal()
+    const getToken = useGetToken(instance);
 
     const formik = useFormik({
         initialValues: {
@@ -68,49 +69,51 @@ const Transactions = (props) => {
                 "CreditIn": values.credit === '' ? 0 : values.credit,
                 "SeedCode": values.seedInput === '' ? '0' : values.seedInput, // It needs to be a string and don't ask why
             }
-            let jwt = authResult.accessToken
-            axios.post(transactionsUrl, body, {
-                method: "POST",
-                headers: {
-                    "Content-type": "application/json",
-                    'Authorization': `Bearer ${jwt}`
-                }
-            })
-                .then((res) => {
-                    let response = res.data
-                    console.log(response)
-                    let transactions = []
-                    response.transactions.forEach(transaction => {
-                        let transNew = transaction
-                        transNew.id = response.transactions.indexOf(transaction)
-                        transactions.push(transNew)
-                    })
-                    let seedObj = getSeedObj(response.seedCode)
-                    dispatch(setAudit([audit.file, audit.accounts, {
-                        ...audit.auditDetails,
-                        sampling: {
-                            ...audit.auditDetails.sampling,
-                            ...values,
-                            sampledTransactions: transactions,
-                            credit: seedObj.credit,
-                            debit: seedObj.debit,
-                            materiality: seedObj.materiality,
-                            seed: seedObj.seed,
-                            samplePercentage: response.samplePercentage,
-                            sampleInterval: response.sampleInterval,
-                            creditSampled: response.creditSampled,
-                            debitSampled: response.debitSampled
-                        }
-                    }]))
-                    setError('')
-                    setIsLoading(false)
-                }).catch((error) => {
-                    console.log(error)
-                    setError(error)
+
+            getToken.then((jwt) => {
+                console.log(jwt)
+                axios.post(transactionsUrl, body, {
+                    method: "POST",
+                    headers: {
+                        "Content-type": "application/json",
+                        'Authorization': `Bearer ${jwt}`
+                    }
                 })
+                    .then((res) => {
+                        let response = res.data
+                        console.log(response)
+                        let transactions = []
+                        response.transactions.forEach(transaction => {
+                            let transNew = transaction
+                            transNew.id = response.transactions.indexOf(transaction)
+                            transactions.push(transNew)
+                        })
+                        let seedObj = getSeedObj(response.seedCode)
+                        dispatch(setAudit([audit.file, audit.accounts, {
+                            ...audit.auditDetails,
+                            sampling: {
+                                ...audit.auditDetails.sampling,
+                                ...values,
+                                sampledTransactions: transactions,
+                                credit: seedObj.credit,
+                                debit: seedObj.debit,
+                                materiality: seedObj.materiality,
+                                seed: seedObj.seed,
+                                samplePercentage: response.samplePercentage,
+                                sampleInterval: response.sampleInterval,
+                                creditSampled: response.creditSampled,
+                                debitSampled: response.debitSampled
+                            }
+                        }]))
+                        setError('')
+                        setIsLoading(false)
+                    }).catch((error) => {
+                        console.log(error)
+                        setError(error)
+                    })
+            })
         },
     });
-    console.log(audit)
     function clearSamples() {
         dispatch(setAudit([audit.file, audit.accounts, {
             ...audit.auditDetails,
