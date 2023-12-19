@@ -42,6 +42,7 @@ const Transactions = (props) => {
 
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [refreshed, setRefreshed] = useState(true)
 
     const { instance } = useMsal()
     const getToken = useGetToken(instance);
@@ -107,6 +108,7 @@ const Transactions = (props) => {
                         }]))
                         setError('')
                         setIsLoading(false)
+
                     }).catch((error) => {
                         console.log(error)
                         setError(error)
@@ -133,6 +135,10 @@ const Transactions = (props) => {
         }]))
         formik.resetForm()
         setIsLoading(false)
+        setRefreshed(false)
+        setTimeout(() => {
+            setRefreshed(true) // force form refresh :)
+        }, 1)
     }
 
 
@@ -143,7 +149,7 @@ const Transactions = (props) => {
             </h2>
             <div className="row justify-center">
 
-                {audit.auditDetails.accounts.selectedAccounts.length != 0 ?
+                {audit.auditDetails.accounts.selectedAccounts.length != 0 && refreshed ?
                     <>
                         <AccountDetailsBar />
                         <div className="col-12">

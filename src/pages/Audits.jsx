@@ -23,6 +23,7 @@ import 'filepond/dist/filepond.min.css'
 import useGetToken from '../components/utility/Auth/useGetToken';
 
 import { useMsal } from '@azure/msal-react';
+import XeroImport from '../components/Xero/GeneralLedgerImport/Import';
 
 const customStyles = {
     content: {
@@ -369,6 +370,7 @@ const Audits = (props) => {
                     </div>
                 </div>
             </div>
+            <XeroImport />
             <Modal
                 isOpen={modalIsOpen}
                 // onAfterOpen={afterOpenModal}
