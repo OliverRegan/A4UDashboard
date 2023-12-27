@@ -3,12 +3,10 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom"
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useMsal } from '@azure/msal-react';
-import { basicEncrypt, basicDecrypt } from "../../utility/Encryption/BasicEncryptDecrypt";
 import { SetCookie, GetCookie } from "../../utility/Cookies/SetGetCookie";
 
 
-const XeroImport = () => {
+const GetXeroToken = () => {
 
     const [accessToken, setAccessToken] = useState('');
     const { search } = useLocation();
@@ -94,4 +92,4 @@ const XeroImport = () => {
 
 }
 
-export default XeroImport
+export default GetXeroToken

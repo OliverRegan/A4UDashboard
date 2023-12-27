@@ -25,7 +25,7 @@ const Router = (props) => {
 
     const [err, setErr] = useState('');
 
-    const [files, setFiles] = useState([]);
+    const [uploads, setUploads] = useState([]);
 
     return (
         <>
@@ -35,8 +35,8 @@ const Router = (props) => {
                         <Route path="/" element={<Home />} /> {/* Basically a catch-all to redirect to currentAudits*/}
                         <Route index path='/dashboard' exact element={<Home />} /> {/* Temporary while dashboard is out of order*/}
                         <Route path='/currentAudits' element={<Audits
-                            files={files}
-                            setFiles={setFiles}
+                            uploads={uploads}
+                            setUploads={setUploads}
                         />} />
                         <Route path='/customers' element={<Customers />} />
                         <Route path='/accounts' element={<Accounts />} />

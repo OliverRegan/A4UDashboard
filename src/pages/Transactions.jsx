@@ -11,7 +11,7 @@ import "../../src/assets/css/excelToJson.css"
 import '../components/topnav/topnav.css';
 import "react-datepicker/dist/react-datepicker.css";
 import columns from "../components/utility/GridDefinitions/TransactionColumns"
-import ExportBar from '../components/exportBar/ExportBar';
+import ExportBar from '../components/SamplingComponents/exportBar/ExportBar';
 
 import useGetToken from '../components/utility/Auth/useGetToken';
 import { useMsal } from "@azure/msal-react";

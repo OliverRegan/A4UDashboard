@@ -1,29 +1,27 @@
-import React, { useContext, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+
 import '../components/topnav/topnav.css';
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from 'react-modal';
 
-import { Link } from 'react-router-dom';
 
 import { useFormik } from 'formik';
 import {
     Button,
-    TextField,
-    Typography,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAudit } from '../redux/reducers/SaveAudit';
 
-// Import React FilePond
-import { FilePond } from 'react-filepond'
-
 // Import FilePond styles
 import 'filepond/dist/filepond.min.css'
-import useGetToken from '../components/utility/Auth/useGetToken';
 
 import { useMsal } from '@azure/msal-react';
-import XeroImport from '../components/Xero/GeneralLedgerImport/Import';
+import XeroImport from '../components/Xero/GetXeroToken/GetXeroToken';
+import AuditDetails from '../components/AuditsPageComponents/auditDetails/AuditDetails';
+import FileUploader from '../components/AuditsPageComponents/upload/FileUploader';
+import StepIndicator from '../components/Shared/StepIndicator/StepIndicator';
+import UploadSelector from '../components/SamplingComponents/UploadSelector/UploadSelector';
+import { useLocation } from 'react-router-dom';
 
 const customStyles = {
     content: {
@@ -45,6 +43,20 @@ const customStyles = {
     }
 };
 
+const stepList = [
+    {
+        step: 1,
+        name: "Upload Data"
+    },
+    {
+        step: 2,
+        name: "Input Details"
+    },
+    {
+        step: 3,
+        name: "Select Columns"
+    }
+]
 
 const Audits = (props) => {
 
@@ -54,10 +66,20 @@ const Audits = (props) => {
     const dispatch = useDispatch()
     const audit = useSelector((state) => state.SaveAudit)
     const [file, setFile] = useState(audit.file)
-
+    const [uploadType, setUploadType] = useState("");
+    const [step, setStep] = useState(1)
+    const [completedStep, setCompletedStep] = useState()
     const { instance } = useMsal()
     const profile = instance.getActiveAccount()
-    const getToken = useGetToken(instance);
+
+    const location = useLocation();
+
+    useEffect(() => {
+        let params = new URLSearchParams(location.search);
+        if (params.get("xeroAuthRedirect") == "true") {
+            setUploadType("xero")
+        }
+    }, [])
 
     Modal.setAppElement('body');
 
@@ -81,6 +103,12 @@ const Audits = (props) => {
         setIsOpen(true)
         setChoice(() => callback)
     }
+
+
+    async function validateFileRemoval() {
+        return await checkRemove() ? dispatch(setAudit([{ fileName: '', fileSize: '' }, [], audit.auditDetails])) : ''
+    }
+
     async function checkRemove() {
         return new Promise((resolve, reject) => {
             openModal(userChoice => {
@@ -94,283 +122,168 @@ const Audits = (props) => {
             })
         })
     }
-    async function validateFileRemoval() {
-        return await checkRemove() ? dispatch(setAudit([{ fileName: '', fileSize: '' }, [], audit.auditDetails])) : ''
-    }
 
 
-    function formatBytes(bytes, decimals) {
-        if (bytes == 0) return '0 Bytes';
-        var k = 1024,
-            dm = decimals || 2,
-            sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-            i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-    }
+    function dispatchAudit(response) {
+        let data = response.data
 
-    const processFile = (fieldName, file, metadata, load, error, progress, abort) => {
-        const formData = new FormData();
-        formData.append(fieldName, file, file.name);
-
-        getToken.then((jwt) => {
-            axios.post(process.env.REACT_APP_BACKEND_URL + "/audit/excel", formData, {
-                headers: {
-                    'Authorization': `Bearer ${jwt}`,
-                },
-                onUploadProgress: (e) => {
-                    progress(e.lengthComputable, e.loaded, e.total);
-                }
-            })
-
-                .then((response) => {
-                    let data = response.data
-
-                    // props.handleUpload(res);
-                    let accounts = data.accounts
-                    accounts.forEach((account) => {
-                        account['id'] = accounts.indexOf(account)
-                    })
-                    // Pull needed file details
-                    let fileData = {
-                        fileName: data.fileName,
-                        fileSize: data.fileSize
-                    }
-
-                    dispatch(setAudit([fileData, accounts, {
-                        auditName: "",
-                        clientName: "",
-                        financialYear: "",
-                        auditor: {
-                            name: profile.name
-                        },
-                        accounts: {
-                            population: '',
-                            selectedAccounts: [],
-                            transactionNum: '',
-                            creditAmount: '',
-                            debitAmount: ''
-                        },
-                        sampling: {
-                            sampledTransactions: [],
-                            useSeed: false,
-                            credit: '',
-                            debit: '',
-                            materiality: '',
-                            seedInput: '',
-                            seed: '',
-                            sampleInterval: '',
-                            samplePercentage: ''
-                        },
-                        search: {
-                            searchedTransactions: [],
-                            type: {
-                                debit: false,
-                                credit: false
-                            },
-                            minAmount: '',
-                            maxAmount: '',
-                            startDateString: '',
-                            endDateString: '',
-                            startDate: null,
-                            endDate: null,
-                            description: '',
-                        },
-                        recurring: {
-                            recurringTransactions: [],
-                            identifierTransactions: [],
-                            type: {
-                                debit: false,
-                                credit: false
-                            },
-                            recurrence: {
-                                daily: false,
-                                weekly: false,
-                                monthly: false,
-                                quarterly: false,
-                                biYearly: false,
-                                yearly: false
-                            },
-                            minAmount: '',
-                            maxAmount: '',
-                            startDateString: '',
-                            endDateString: '',
-                            startDate: null,
-                            endDate: null,
-                            description: '',
-                            useExact: false,
-                            exactAmount: '',
-                            percentage: ''
-                        }
-                    }]))
-                    load(response.data);
-                })
-                .catch((err) => {
-                    console.log(err);
-                    abort();
-                });
+        // props.handleUpload(res);
+        let accounts = data.accounts
+        accounts.forEach((account) => {
+            account['id'] = accounts.indexOf(account)
         })
+        // Pull needed file details
+        let fileData = {
+            fileName: data.fileName,
+            fileSize: data.fileSize
+        }
 
-
-        // onload: (res) => {
-        //     url: process.env.REACT_APP_BACKEND_URL + "/audit/excel",
-        //      
+        dispatch(setAudit([fileData, accounts, {
+            auditName: "",
+            clientName: "",
+            financialYear: "",
+            auditor: {
+                name: profile.name
+            },
+            accounts: {
+                population: '',
+                selectedAccounts: [],
+                transactionNum: '',
+                creditAmount: '',
+                debitAmount: ''
+            },
+            sampling: {
+                sampledTransactions: [],
+                useSeed: false,
+                credit: '',
+                debit: '',
+                materiality: '',
+                seedInput: '',
+                seed: '',
+                sampleInterval: '',
+                samplePercentage: ''
+            },
+            search: {
+                searchedTransactions: [],
+                type: {
+                    debit: false,
+                    credit: false
+                },
+                minAmount: '',
+                maxAmount: '',
+                startDateString: '',
+                endDateString: '',
+                startDate: null,
+                endDate: null,
+                description: '',
+            },
+            recurring: {
+                recurringTransactions: [],
+                identifierTransactions: [],
+                type: {
+                    debit: false,
+                    credit: false
+                },
+                recurrence: {
+                    daily: false,
+                    weekly: false,
+                    monthly: false,
+                    quarterly: false,
+                    biYearly: false,
+                    yearly: false
+                },
+                minAmount: '',
+                maxAmount: '',
+                startDateString: '',
+                endDateString: '',
+                startDate: null,
+                endDate: null,
+                description: '',
+                useExact: false,
+                exactAmount: '',
+                percentage: ''
+            }
+        }]))
     }
 
 
     return (
         <div>
-            <div class=" w-full h-screen items-center justify-center bg-grey-lighter" className=''>
+            <div className=" h-screen items-center justify-center bg-grey-lighter w-1/2 mx-auto" >
                 <div className="card">
                     <div className="card__body">
-                        {/* {files === {} ? */}
-                        {props.file != {} ?
-                            <div>
-                                <div className='flex flex-col mx-auto w-1/2'>
-                                    <div classname="flex justify-around my-3">
-                                        <h1 className='text-center text-2xl'>
-                                            {audit.auditDetails.auditName === '' ? "New Audit" : audit.auditDetails.auditName}
-                                        </h1>
-                                    </div>
-                                    <div className='flex justify-around my-3'>
-                                        <div className='w-1/2 text-center'>
-                                            <p className="p1 mx-auto text-xl">{audit.auditDetails.clientName === '' ? "Enter a client name" : audit.auditDetails.clientName}</p>
-                                        </div>
-                                        <div className='w-1/2 text-center'>
-                                            <p className="p1 mx-auto text-xl">{audit.auditDetails.financialYear === "" ? "Enter a financial year" : audit.auditDetails.financialYear}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <form onSubmit={formik.handleSubmit}>
-                                    <div className='flex flex-col mx-auto w-1/2'>
-                                        <TextField
-                                            label="Audit Name"
-                                            variant='filled'
-                                            size='small'
-                                            placeholder='Audit Name'
-                                            sx={{
-                                                my: "4px"
-                                            }}
-                                            id="auditName"
-                                            name="auditName"
-                                            type="text"
-                                            onChange={formik.handleChange}
-                                            value={formik.values.auditName}
-                                        />
-                                        <TextField
-                                            label="Client Name"
-                                            variant='filled'
-                                            size='small'
-                                            placeholder='Client Name'
-                                            sx={{
-                                                my: "4px"
-                                            }}
-                                            id="clientName"
-                                            name="clientName"
-                                            type="text"
-                                            onChange={formik.handleChange}
-                                            value={formik.values.clientName}
-                                        />
-                                        <TextField
-                                            label="Financial Year"
-                                            placeholder='Financial Year'
-                                            variant='filled'
-                                            size='small'
-                                            sx={{
-                                                my: "4px"
-                                            }}
-                                            id="financialYear"
-                                            name="financialYear"
-                                            type="text"
-                                            onChange={formik.handleChange}
-                                            value={formik.values.financialYear}
-                                        />
-                                        <Button
-                                            type='submit'
-                                            variant='contained'
-                                            sx={{
-                                                mt: '1rem',
-                                                width: 1 / 2,
-                                                mx: 'auto'
-                                            }}>Save Details</Button>
-                                    </div>
-                                </form>
-                            </div>
-                            :
-                            <div className='flex justify-center'>
-                                <p>
-                                    Please Upload a File First
-                                </p>
-                            </div>
-                        }
+                        <StepIndicator step={step}
+                            setStep={setStep}
+                            stepList={stepList}
+                            setCompletedStep={setCompletedStep}
+                            completedStep={completedStep} />
                     </div>
                 </div>
-                {/* Temporary - need to add filename retrival to back end */}
-                {audit.accounts.length === 0 ?
-                    <FilePond
-                        onRemoveFile={() => { props.clear() }}
-                        dropOnElement
-                        labelInvalidField
-                        server={{
-                            process: processFile,
-                        }}
-                        name="file"
-                        labelIdle='<p>Drag & Drop your files or <span class="filepond--label-action">Browse</span><br />Only accepts .xlsx files</p>'
-                    />
-                    :
-                    <div className='card'>
-                        <div className='card-body '>
-                            <div className='w-100 text-center mb-8'>
-                                <h2 className='text-2xl'>Uploaded File</h2>
-                            </div>
-                            <div className='w-1/2 flex justify-around mx-auto'>
-                                <div className='text-center w-1/2'>
-                                    <h4 className='my-2 text-xl'>File Name:</h4>
-                                    <p>{audit.file.fileName}</p>
-                                </div>
-                                <div className='text-center w-1/2'>
-                                    <h4 className='my-2 text-xl'>File Size</h4>
-                                    <p>{formatBytes(audit.file.fileSize, 0)}</p>
-                                </div>
-                            </div>
-                            <div className=' grid grid-cols-4 gap-2 w-1/2 mx-auto mt-4'>
-                                <div className='col-span-2'>
-                                    <Button
-                                        component={Link}
-                                        to="/accounts"
-                                        variant="contained"
-                                        color='success'
-                                        sx={{
-                                            width: 1,
-                                            "&:hover": {
-                                                color: "#fff"
-                                            }
-                                        }}>Select Accounts</Button>
-                                </div>
-                                <div className='col-span-2'>
-                                    <Button
-                                        onClick={validateFileRemoval}
-                                        // onClick={}
-                                        variant="contained"
-                                        color='error'
-                                        sx={{
-                                            width: 1,
-                                        }}>Clear File</Button>
-                                </div>
-                            </div>
+                <div className="card">
+                    <div className="card__body">
 
-                        </div>
-                    </div>}
-                <div className="topnav__right">
-                    <div className="topnav__right-item">
-                        {/*<Dropdown
-                        customToggle={() => renderUserToggle(curr_user)}
-                        contentData={user_menu}
-                        renderItems={(item, index) => renderUserMenu(item, index)}
-				   />*/}
+                        {
+                            step === 1 ?
+
+                                <UploadSelector
+                                    setUploadType={setUploadType}
+                                    uploadType={uploadType}
+                                />
+
+                                :
+                                <></>
+                        }
+                        {
+                            step === 1 && uploadType != "" ?
+                                <div className='mt-10'>
+                                    {
+                                        uploadType === "file" ?
+                                            <FileUploader
+                                                audit={audit}
+                                                dispatchAudit={dispatchAudit}
+                                                openModal={openModal}
+                                                closeModal={closeModal}
+                                                validateFileRemoval={validateFileRemoval}
+                                                checkRemove={checkRemove}
+                                            />
+                                            :
+                                            <></>
+                                    }
+                                    {
+                                        uploadType === "xero" ?
+                                            <XeroImport dispatchAudit={dispatchAudit} openModal={openModal} closeModal={closeModal} />
+                                            :
+                                            <></>
+                                    }
+                                </div>
+                                :
+                                <></>
+
+
+                        }
+                        {
+                            step === 2 ?
+                                <AuditDetails
+                                    formik={formik}
+                                    audit={audit}
+                                    uploads={props.uploads}
+                                    step={step}
+                                    setStep={setStep}
+                                    setCompletedStep={setCompletedStep}
+                                    completedStep={completedStep} />
+
+                                :
+                                <></>
+                        }
+
                     </div>
                 </div>
+
+
+
             </div>
-            <XeroImport />
+
+
             <Modal
                 isOpen={modalIsOpen}
                 // onAfterOpen={afterOpenModal}

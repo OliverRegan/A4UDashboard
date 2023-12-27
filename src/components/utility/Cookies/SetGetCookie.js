@@ -4,8 +4,8 @@ export const SetCookie = (cookieName, cookieValue, expiryInDays, path) => {
         const date = new Date();
 
         date.setTime(date.getTime() + (expiryInDays * 24 * 60 * 60 * 1000)); // current time + days in ms
-
-        const expireString = "expires=" + date.toUTCString();
+        console.log(date)
+        const expireString = "expires=" + date.toString();
         const pathString = path === "" ? "/" : path
 
         document.cookie = `${cookieName}=${cookieValue};${expireString};path=${pathString}`
@@ -21,7 +21,7 @@ export const SetCookie = (cookieName, cookieValue, expiryInDays, path) => {
 }
 
 // Parse cookies looking for one in question
-export const GetCookie = (cookieName) => {
+export const GetCookie = (cookieValue) => {
 
     const name = cookieValue + "=";
 
