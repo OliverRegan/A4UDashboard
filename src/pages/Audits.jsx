@@ -16,7 +16,7 @@ import { setAudit } from '../redux/reducers/SaveAudit';
 import 'filepond/dist/filepond.min.css'
 
 import { useMsal } from '@azure/msal-react';
-import XeroImport from '../components/Xero/GetXeroToken/GetXeroToken';
+import XeroImport from '../components/AuditsPageComponents/upload/XeroImport';
 import AuditDetails from '../components/AuditsPageComponents/auditDetails/AuditDetails';
 import FileUploader from '../components/AuditsPageComponents/upload/FileUploader';
 import StepIndicator from '../components/Shared/StepIndicator/StepIndicator';

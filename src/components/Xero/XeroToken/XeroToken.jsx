@@ -6,7 +6,7 @@ import axios from 'axios';
 import { SetCookie, GetCookie } from "../../utility/Cookies/SetGetCookie";
 
 
-const GetXeroToken = () => {
+const XeroToken = () => {
 
     const [accessToken, setAccessToken] = useState('');
     const { search } = useLocation();
@@ -92,4 +92,4 @@ const GetXeroToken = () => {
 
 }
 
-export default GetXeroToken
+export default XeroToken
