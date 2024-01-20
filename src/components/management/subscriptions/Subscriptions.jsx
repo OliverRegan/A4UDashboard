@@ -6,7 +6,7 @@ import axios from "axios";
 import { useMsal } from "@azure/msal-react";
 
 //Custom Hooks and components
-import Loader from "../../utility/Loader";
+import Loader from "../../utility/Loader/Loader";
 import useGetToken from "../../utility/Auth/useGetToken";
 
 const Subscriptions = () => {

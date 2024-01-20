@@ -9,7 +9,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 
 //Custom Hooks and components
-import Loader from "../../utility/Loader";
+import Loader from "../../utility/Loader/Loader";
 import useGetToken from "../../utility/Auth/useGetToken";
 import CheckoutForm from "./CheckoutForm";
 

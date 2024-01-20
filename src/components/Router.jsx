@@ -55,7 +55,7 @@ const Router = (props) => {
                             setErr={setErr}
                             err={err}
                         />} />
-
+                        <Route path='/sampling-details' element={<Transactions />} />
                     </Route>
                 </Routes >
             </BrowserRouter>

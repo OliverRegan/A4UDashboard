@@ -121,7 +121,7 @@ const RecurringTransactions = (props) => {
                             recurringTransactions.push(transNew)
                             identifierTransactions.push(transNew[0])
                         })
-                        dispatch(setAudit([audit.file, audit.accounts, {
+                        dispatch(setAudit([audit.importData, audit.accounts, {
                             ...audit.auditDetails,
                             recurring: {
                                 ...audit.auditDetails.recurring,
@@ -170,12 +170,12 @@ const RecurringTransactions = (props) => {
             let dateString = (date.getUTCDate() + 1) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear()
             formik.setFieldValue('endDate', value)
             formik.setFieldValue('endDateString', dateString)
-            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: value.toString(), endDateString: dateString } }]))
+            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: value.toString(), endDateString: dateString } }]))
             setEndDateErr('');
         } else if (value === null) {
             formik.setFieldValue('endDate', null)
             formik.setFieldValue('endDateString', '')
-            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: '', endDateString: '' } }]))
+            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: '', endDateString: '' } }]))
             setEndDateErr('');
         } else {
             formik.setFieldValue('endDate', value)
@@ -193,14 +193,14 @@ const RecurringTransactions = (props) => {
             // setStartDateString(dateString)
             formik.setFieldValue('startDate', value)
             formik.setFieldValue('startDateString', dateString)
-            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: value.toString(), startDateString: dateString } }]))
+            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: value.toString(), startDateString: dateString } }]))
             setStartDateErr('');
         } else if (value === null) {
             // setEndDate(value)
             // setEndDateString('')
             formik.setFieldValue('startDate', null)
             formik.setFieldValue('startDateString', '')
-            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: '', startDateString: '' } }]))
+            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: '', startDateString: '' } }]))
             setStartDateErr('');
         } else {
             formik.setFieldValue('startDate', value)
@@ -219,7 +219,7 @@ const RecurringTransactions = (props) => {
         setErr(false)
         setStartDateErr('')
         setEndDateErr('')
-        dispatch(setAudit([audit.file, audit.accounts, {
+        dispatch(setAudit([audit.importData, audit.accounts, {
             ...audit.auditDetails,
             recurring: {
                 recurringTransactions: [],

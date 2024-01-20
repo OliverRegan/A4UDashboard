@@ -7,7 +7,10 @@ export const SetCookie = (cookieName, cookieValue, expiryInDays, path) => {
         console.log(date)
         const expireString = "expires=" + date.toString();
         const pathString = path === "" ? "/" : path
-
+        console.log(expireString)
+        console.log(pathString)
+        console.log(cookieValue)
+        console.log(cookieName)
         document.cookie = `${cookieName}=${cookieValue};${expireString};path=${pathString}`
 
         return true;

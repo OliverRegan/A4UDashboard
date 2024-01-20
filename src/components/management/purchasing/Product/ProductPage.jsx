@@ -9,7 +9,7 @@ import { useMsal } from "@azure/msal-react";
 // Hooks & static
 import useGetToken from "../../../utility/Auth/useGetToken"
 import { useParams } from "react-router-dom";
-import Loader from "../../../utility/Loader";
+import Loader from "../../../utility/Loader/Loader";
 import placeholder from "../../../../assets/images/profile.png"
 
 

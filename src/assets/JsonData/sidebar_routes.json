@@ -15,6 +15,11 @@
         "icon": "bx bx-dollar"
     },
     {
+        "display_name": "Sampling Details",
+        "route": "/sampling-details",
+        "icon": "bx bx-detail"
+    },
+    {
         "display_name": "Search",
         "route": "/search",
         "icon": "bx bx-search"

@@ -2,7 +2,7 @@ import { InteractionStatus } from "@azure/msal-browser";
 import { useMsal } from "@azure/msal-react";
 import { useIsAuthenticated } from "@azure/msal-react";
 import { useEffect } from "react";
-import Loader from "../components/utility/Loader";
+import Loader from "../components/utility/Loader/Loader";
 
 const Authenticating = () => {
     const { instance, inProgress } = useMsal();

@@ -1,24 +1,38 @@
-import { Button } from "@mui/material"
-import { Link, useLocation, useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate, } from "react-router-dom";
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { SetCookie, GetCookie } from "../../utility/Cookies/SetGetCookie";
+import Loader from "../../utility/Loader/Loader"
 
-
-const XeroToken = () => {
+const XeroAuth = (props) => {
 
     const [accessToken, setAccessToken] = useState('');
-    const { search } = useLocation();
-    const params = new URLSearchParams(search);
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
     const navigate = useNavigate();
 
 
     useEffect(() => {
-        console.log(params)
-        console.log(GetCookie("XeroAuth"))
-        if (params) { // Look for code from Xero
-            handleCallback();
+
+        if (params.has("code")) { // Look for code from Xero
+            handleCallback().then(() => {
+                navigate(props.redirectPath)
+            })
+        }
+        else {
+            // Check for cookie and its expiry
+            let cookie = JSON.parse(GetCookie("XeroAuth"))
+
+            console.log(cookie)
+
+            if (new Date(cookie.expires_at) < new Date()) {
+                // refresh & re save
+                console.log("hello")
+            } else {
+                console.log("hello no")
+                // try use refresh, if not login
+                loginWithXero();
+            }
         }
 
     }, [])
@@ -29,7 +43,7 @@ const XeroToken = () => {
         authorizationUrl: 'https://login.xero.com/identity/connect/authorize',
         tokenUrl: 'https://identity.xero.com/connect/token',
         redirectUri: process.env.REACT_APP_XERO_REDIRECT_URL,
-        scopes: 'openid profile email accounting.settings.read',
+        scopes: 'openid profile email accounting.settings accounting.journals.read accounting.attachments accounting.transactions offline_access',
     };
 
     function loginWithXero() {
@@ -46,13 +60,13 @@ const XeroToken = () => {
                 const credentials = `${xeroConfig.clientId}:${xeroConfig.clientSecret}`;
                 const base64EncodedCredentials = btoa(credentials);
 
-                let params = new URLSearchParams();
-                params.append("grant_type", "authorization_code");
-                params.append("code", code);
-                params.append("redirect_uri", xeroConfig.redirectUri);
+                let queryParams = new URLSearchParams();
+                queryParams.append("grant_type", "authorization_code");
+                queryParams.append("code", code);
+                queryParams.append("redirect_uri", xeroConfig.redirectUri);
 
                 await axios.post(xeroConfig.tokenUrl,
-                    params,
+                    queryParams,
                     {
                         headers: {
                             "Authorization": `Basic ${base64EncodedCredentials}`,
@@ -68,7 +82,11 @@ const XeroToken = () => {
 
                     let encrypted = JSON.stringify(res.data); // TEMP
                     SetCookie("XeroAuth", encrypted, 0.25);
-
+                    console.log(res.data)
+                    if (params.get("xeroAuthRedirect") == "true") {
+                        console.log("test")
+                        props.setAuthorised(() => true)
+                    }
                 });
 
             } else {
@@ -82,14 +100,17 @@ const XeroToken = () => {
 
 
     return (
-        <div>
-
-            <Button onClick={() => loginWithXero()}>
+        <div className="h-full w-full flex flex-col justify-center text-center">
+            {/* <Button
+                variant="contained"
+                onClick={() => loginWithXero()}>
                 Import Xero Shit
-            </Button>
+            </Button> */}
+            <p className="my-5">Starting Authentication Flow</p>
+            <Loader />
         </div>
     )
 
 }
 
-export default XeroToken
+export default XeroAuth

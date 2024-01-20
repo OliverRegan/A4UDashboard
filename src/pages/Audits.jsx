@@ -4,13 +4,12 @@ import '../components/topnav/topnav.css';
 import "react-datepicker/dist/react-datepicker.css";
 import Modal from 'react-modal';
 
+import { Button, Link } from "@mui/material";
+
 
 import { useFormik } from 'formik';
-import {
-    Button,
-} from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { setAudit } from '../redux/reducers/SaveAudit';
+import { resetAudit, setAudit } from '../redux/reducers/SaveAudit';
 
 // Import FilePond styles
 import 'filepond/dist/filepond.min.css'
@@ -21,6 +20,7 @@ import AuditDetails from '../components/AuditsPageComponents/auditDetails/AuditD
 import FileUploader from '../components/AuditsPageComponents/upload/FileUploader';
 import StepIndicator from '../components/Shared/StepIndicator/StepIndicator';
 import UploadSelector from '../components/SamplingComponents/UploadSelector/UploadSelector';
+import UploadDetails from '../components/AuditsPageComponents/upload/UploadDetails';
 import { useLocation } from 'react-router-dom';
 
 const customStyles = {
@@ -43,32 +43,36 @@ const customStyles = {
     }
 };
 
-const stepList = [
-    {
-        step: 1,
-        name: "Upload Data"
-    },
-    {
-        step: 2,
-        name: "Input Details"
-    },
-    {
-        step: 3,
-        name: "Select Columns"
-    }
-]
+// const stepList = [
+//     {
+//         step: 1,
+//         name: "Upload Data"
+//     },
+//     {
+//         step: 2,
+//         name: "Input Details"
+//     },
+//     {
+//         step: 3,
+//         name: "Select Columns"
+//     }
+// ]
 
 const Audits = (props) => {
 
-    const [modalIsOpen, setIsOpen] = useState(false);
 
+    // const [step, setStep] = useState(1)
+    // const [completedStep, setCompletedStep] = useState()
+
+
+    const [modalIsOpen, setIsOpen] = useState(false);
     const [choice, setChoice] = useState();
     const dispatch = useDispatch()
     const audit = useSelector((state) => state.SaveAudit)
     const [file, setFile] = useState(audit.file)
     const [uploadType, setUploadType] = useState("");
-    const [step, setStep] = useState(1)
-    const [completedStep, setCompletedStep] = useState()
+    const [dataImported, setDataImported] = useState(false)
+
     const { instance } = useMsal()
     const profile = instance.getActiveAccount()
 
@@ -79,9 +83,35 @@ const Audits = (props) => {
         if (params.get("xeroAuthRedirect") == "true") {
             setUploadType("xero")
         }
+
+        checkDataImported();
+
     }, [])
 
     Modal.setAppElement('body');
+
+    function checkDataImported() {
+
+        let defaultFileData = {
+            fileName: "",
+            fileSize: ""
+        }
+
+        let defaultXeroData = {
+            connectionName: "",
+            connectionId: "",
+            dateStart: "",
+            dateEnd: ""
+        }
+        console.log(audit.importData.file)
+        console.log(audit.importData.xero)
+        if (JSON.stringify(audit.importData.file) === JSON.stringify(defaultFileData) && JSON.stringify(audit.importData.xero) === JSON.stringify(defaultXeroData)) {
+            setDataImported(false)
+        } else {
+            setDataImported(true)
+        }
+
+    }
 
     const formik = useFormik({
         initialValues: {
@@ -91,7 +121,7 @@ const Audits = (props) => {
         },
         onSubmit: values => {
             // Add data to redux store for current audit
-            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, ...values }]))
+            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, ...values }]))
         },
     });
 
@@ -105,14 +135,18 @@ const Audits = (props) => {
     }
 
 
-    async function validateFileRemoval() {
-        return await checkRemove() ? dispatch(setAudit([{ fileName: '', fileSize: '' }, [], audit.auditDetails])) : ''
+    async function handleImportRemoval() {
+        return await checkRemove() ?
+            dispatch(resetAudit())
+            : ''
     }
 
     async function checkRemove() {
         return new Promise((resolve, reject) => {
             openModal(userChoice => {
                 if (userChoice === true) {
+                    setDataImported(() => false)
+                    setUploadType("")
                     setIsOpen(false);
                     resolve(true);
                 } else {
@@ -124,7 +158,7 @@ const Audits = (props) => {
     }
 
 
-    function dispatchAudit(response) {
+    function dispatchAudit(response, importDetails) {
         let data = response.data
 
         // props.handleUpload(res);
@@ -132,154 +166,219 @@ const Audits = (props) => {
         accounts.forEach((account) => {
             account['id'] = accounts.indexOf(account)
         })
-        // Pull needed file details
+
         let fileData = {
-            fileName: data.fileName,
-            fileSize: data.fileSize
+            fileName: "",
+            fileSize: ""
+        };
+        let xeroData = {
+            connectionName: "",
+            connectionId: "",
+            dateStart: "",
+            dateEnd: ""
         }
 
-        dispatch(setAudit([fileData, accounts, {
-            auditName: "",
-            clientName: "",
-            financialYear: "",
-            auditor: {
-                name: profile.name
+        switch (importDetails.type) {
+            case "file":
+                fileData.fileName = importDetails.data.fileName
+                fileData.fileSize = importDetails.data.fileSize
+                break;
+            case "xero":
+                xeroData.connectionId = importDetails.data.connectionId;
+                xeroData.connectionName = importDetails.data.connectionName;
+                break;
+            default:
+                console.error("Something went wrong. Invalid upload type.")
+        }
+        setDataImported(true)
+
+        dispatch(setAudit([
+            {
+                file: fileData,
+                xero: xeroData
             },
-            accounts: {
-                population: '',
-                selectedAccounts: [],
-                transactionNum: '',
-                creditAmount: '',
-                debitAmount: ''
-            },
-            sampling: {
-                sampledTransactions: [],
-                useSeed: false,
-                credit: '',
-                debit: '',
-                materiality: '',
-                seedInput: '',
-                seed: '',
-                sampleInterval: '',
-                samplePercentage: ''
-            },
-            search: {
-                searchedTransactions: [],
-                type: {
-                    debit: false,
-                    credit: false
+            accounts, {
+                auditName: "",
+                clientName: "",
+                financialYear: "",
+                auditor: {
+                    name: profile.name
                 },
-                minAmount: '',
-                maxAmount: '',
-                startDateString: '',
-                endDateString: '',
-                startDate: null,
-                endDate: null,
-                description: '',
-            },
-            recurring: {
-                recurringTransactions: [],
-                identifierTransactions: [],
-                type: {
-                    debit: false,
-                    credit: false
+                accounts: {
+                    population: '',
+                    selectedAccounts: [],
+                    transactionNum: '',
+                    creditAmount: '',
+                    debitAmount: ''
                 },
-                recurrence: {
-                    daily: false,
-                    weekly: false,
-                    monthly: false,
-                    quarterly: false,
-                    biYearly: false,
-                    yearly: false
+                sampling: {
+                    sampledTransactions: [],
+                    useSeed: false,
+                    credit: '',
+                    debit: '',
+                    materiality: '',
+                    seedInput: '',
+                    seed: '',
+                    sampleInterval: '',
+                    samplePercentage: ''
                 },
-                minAmount: '',
-                maxAmount: '',
-                startDateString: '',
-                endDateString: '',
-                startDate: null,
-                endDate: null,
-                description: '',
-                useExact: false,
-                exactAmount: '',
-                percentage: ''
-            }
-        }]))
+                search: {
+                    searchedTransactions: [],
+                    type: {
+                        debit: false,
+                        credit: false
+                    },
+                    minAmount: '',
+                    maxAmount: '',
+                    startDateString: '',
+                    endDateString: '',
+                    startDate: null,
+                    endDate: null,
+                    description: '',
+                },
+                recurring: {
+                    recurringTransactions: [],
+                    identifierTransactions: [],
+                    type: {
+                        debit: false,
+                        credit: false
+                    },
+                    recurrence: {
+                        daily: false,
+                        weekly: false,
+                        monthly: false,
+                        quarterly: false,
+                        biYearly: false,
+                        yearly: false
+                    },
+                    minAmount: '',
+                    maxAmount: '',
+                    startDateString: '',
+                    endDateString: '',
+                    startDate: null,
+                    endDate: null,
+                    description: '',
+                    useExact: false,
+                    exactAmount: '',
+                    percentage: ''
+                }
+            }]))
+    }
+
+    function formatBytes(bytes, decimals) {
+        if (bytes == 0) return '0 Bytes';
+        var k = 1024,
+            dm = decimals || 2,
+            sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+            i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
 
     return (
         <div>
             <div className=" h-screen items-center justify-center bg-grey-lighter w-1/2 mx-auto" >
-                <div className="card">
+                {/* <div className="card">
                     <div className="card__body">
-                        <StepIndicator step={step}
+                        <StepIndicator 
+                        step={step}
                             setStep={setStep}
                             stepList={stepList}
                             setCompletedStep={setCompletedStep}
                             completedStep={completedStep} />
                     </div>
-                </div>
-                <div className="card">
-                    <div className="card__body">
+                </div> */}
+                {
+                    !dataImported ?
+                        <div className="card">
+                            <div className="card__body">
 
-                        {
-                            step === 1 ?
+
 
                                 <UploadSelector
                                     setUploadType={setUploadType}
                                     uploadType={uploadType}
+                                    setDataImported={setDataImported}
                                 />
 
-                                :
-                                <></>
-                        }
-                        {
-                            step === 1 && uploadType != "" ?
-                                <div className='mt-10'>
-                                    {
-                                        uploadType === "file" ?
+
+
+                            </div>
+                        </div>
+                        :
+                        <></>
+                }
+
+                {
+                    uploadType != "" && !dataImported ?
+
+                        <>
+                            {
+                                uploadType === 'file' ?
+                                    <div className="card">
+                                        <div className="card__body">
                                             <FileUploader
                                                 audit={audit}
                                                 dispatchAudit={dispatchAudit}
                                                 openModal={openModal}
                                                 closeModal={closeModal}
-                                                validateFileRemoval={validateFileRemoval}
+                                                handleImportRemoval={handleImportRemoval}
                                                 checkRemove={checkRemove}
+                                            // setStep={setStep}
                                             />
-                                            :
-                                            <></>
-                                    }
-                                    {
-                                        uploadType === "xero" ?
-                                            <XeroImport dispatchAudit={dispatchAudit} openModal={openModal} closeModal={closeModal} />
-                                            :
-                                            <></>
-                                    }
-                                </div>
-                                :
-                                <></>
+                                        </div>
+                                    </div>
+                                    :
+                                    <></>
+                            }
+                            {
+                                uploadType === 'xero' ?
+                                    <div className="card">
+                                        <div className="card__body">
+                                            <XeroImport
+                                                dispatchAudit={dispatchAudit}
+                                            //  setStep={setStep}
+                                            />
+                                        </div>
+                                    </div>
+                                    :
+                                    <></>
+                            }
+                        </>
+
+                        :
+                        <></>
 
 
-                        }
-                        {
-                            step === 2 ?
+                }
+                {
+                    dataImported ?
+                        <div className="card">
+                            <div className="card__body">
                                 <AuditDetails
                                     formik={formik}
                                     audit={audit}
                                     uploads={props.uploads}
-                                    step={step}
-                                    setStep={setStep}
-                                    setCompletedStep={setCompletedStep}
-                                    completedStep={completedStep} />
-
-                                :
-                                <></>
-                        }
-
-                    </div>
-                </div>
-
-
+                                // step={step}
+                                // setStep={setStep}
+                                // setCompletedStep={setCompletedStep}
+                                // completedStep={completedStep}
+                                />
+                            </div>
+                        </div>
+                        :
+                        <></>
+                }
+                {
+                    dataImported ?
+                        <UploadDetails
+                            audit={audit}
+                            formatBytes={formatBytes}
+                            handleImportRemoval={handleImportRemoval}
+                        />
+                        :
+                        <></>
+                }
 
             </div>
 

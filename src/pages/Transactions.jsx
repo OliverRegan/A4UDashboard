@@ -59,7 +59,7 @@ const Transactions = (props) => {
             setIsLoading(true)
 
             // Add data to redux store for current audit
-            dispatch(setAudit([audit.file, audit.accounts, { ...audit.auditDetails, sampling: { ...audit.auditDetails.sampling, ...values } }]))
+            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, sampling: { ...audit.auditDetails.sampling, ...values } }]))
 
             const transactionsUrl = process.env.REACT_APP_BACKEND_URL + "/audit/transactions"
 
@@ -90,7 +90,7 @@ const Transactions = (props) => {
                             transactions.push(transNew)
                         })
                         let seedObj = getSeedObj(response.seedCode)
-                        dispatch(setAudit([audit.file, audit.accounts, {
+                        dispatch(setAudit([audit.importData, audit.accounts, {
                             ...audit.auditDetails,
                             sampling: {
                                 ...audit.auditDetails.sampling,
@@ -117,7 +117,7 @@ const Transactions = (props) => {
         },
     });
     function clearSamples() {
-        dispatch(setAudit([audit.file, audit.accounts, {
+        dispatch(setAudit([audit.importData, audit.accounts, {
             ...audit.auditDetails,
             sampling: {
                 sampledTransactions: [],

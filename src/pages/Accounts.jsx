@@ -66,7 +66,7 @@ const Accounts = (props) => {
             populationCr += Math.abs(acc.totalCredit)
             populationDb += Math.abs(acc.totalDebit)
         })
-        dispatch(setAudit([audit.file, audit.accounts, {
+        dispatch(setAudit([audit.importData, audit.accounts, {
             ...audit.auditDetails,
             accounts: {
                 ...audit.auditDetails.accounts,
@@ -175,7 +175,7 @@ const Accounts = (props) => {
                                             onSelectionModelChange={(ids) => {
                                                 const selectedRowsData = ids.map((id) => audit.accounts.find((row) => row.id === id));
                                                 accounts: {
-                                                    dispatch(setAudit([audit.file, audit.accounts, {
+                                                    dispatch(setAudit([audit.importData, audit.accounts, {
                                                         ...audit.auditDetails,
                                                         accounts: {
                                                             ...audit.auditDetails.accounts,

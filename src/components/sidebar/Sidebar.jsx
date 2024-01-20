@@ -1,14 +1,11 @@
 import React from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import './sidebar.css'
 import logo from '../../assets/images/logo.png'
 import sidebar_items from '../../assets/JsonData/sidebar_routes.json'
 import user_image from '../../assets/images/profile.png'
 import SidebarItem from './SidebarItem'
-import Dropdown from '../dropdown/Dropdown'
-import ThemeMenu from '../thememenu/ThemeMenu'
-import notifications from '../../assets/JsonData/notification.json'
-import user_menu from '../../assets/JsonData/user_menus.json'
 import { MsalProvider, useMsal } from '@azure/msal-react'
 // import { useAuth } from 'oidc-react'
 
@@ -21,7 +18,7 @@ const user = {
 const Sidebar = props => {
 
 
-    const activeItem = sidebar_items.findIndex(item => item.route === window.location.pathname)
+    const [activeItem, setActiveItem] = useState(0)
 
     const { instance } = useMsal()
     const profile = instance.getActiveAccount()
@@ -51,8 +48,10 @@ const Sidebar = props => {
                     >
                         <SidebarItem
                             title={item.display_name}
+                            activeItem={activeItem}
+                            setActiveItem={setActiveItem}
+                            itemNum={sidebar_items.indexOf(item)}
                             icon={item.icon}
-                            active={index === activeItem}
                         />
                     </Link>
                 ))
