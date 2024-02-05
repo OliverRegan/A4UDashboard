@@ -103,7 +103,7 @@ const ProductPage = () => {
                         <div className="my-5 w-1/2 mx-auto flex justify-around">
                             {/* State usage is tamporary - will change to cart */}
                             <Link
-                                to={"/management/purchasing/checkout"}
+                                to={"/dashboard/management/purchasing/checkout"}
                                 state={{ price: priceDetails, quantity: quantity, product: productObj }}
                                 className="bg-blue-500 px-5 py-2 rounded text-gray-100 hover:text-gray-50 hover:bg-blue-400 transition-all duration-100">Checkout</Link>
                         </div>

@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 
 import './thememenu.css'
 
@@ -109,9 +109,9 @@ const ThemeMenu = () => {
     }, []);
 
     return (
-        <div>
-            <button ref={menu_toggle_ref} className="dropdown__toggle" onClick={() => setActiveMenu()}>
-                <i className='bx bx-palette'></i>
+        <div className='flex flex-col justify-center'>
+            <button ref={menu_toggle_ref} className="dropdown__toggle  text-[var(--txt-white)]" onClick={() => setActiveMenu()}>
+                <i className='bx bx-palette '></i>
             </button>
             <div ref={menu_ref} className="theme-menu">
                 <h4>Theme settings</h4>

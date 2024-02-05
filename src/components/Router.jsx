@@ -6,8 +6,10 @@ import Dashboard from '../pages/Dashboard'
 import Customers from '../pages/Customers'
 import Audits from '../pages/Audits'
 import Accounts from '../pages/Accounts'
-import Transactions from '../pages/Transactions'
+import Sampling from '../pages/Sampling'
 import Search from '../pages/Search'
+import SamplingDetails from '../pages/SamplingDetails'
+
 import RecurringTransactions from '../pages/RecurringTransactions'
 import Home from './home/Home';
 import ManagementPanel from '../pages/ManagementPanel';
@@ -31,17 +33,15 @@ const Router = (props) => {
         <>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/" element={<Layout />}>
-                        <Route path="/" element={<Home />} /> {/* Basically a catch-all to redirect to currentAudits*/}
-                        <Route index path='/dashboard' exact element={<Home />} /> {/* Temporary while dashboard is out of order*/}
-                        <Route path='/currentAudits' element={<Audits
+                    <Route path="/dashboard" element={<Layout />}>
+                        <Route index element={<Audits
                             uploads={uploads}
                             setUploads={setUploads}
                         />} />
-                        <Route path='/customers' element={<Customers />} />
-                        <Route path='/accounts' element={<Accounts />} />
-                        <Route path='/search' element={<Search />} />
-                        <Route path='/management' element={<ManagementPanel />} >
+                        <Route path='customers' element={<Customers />} />
+                        <Route path='accounts' element={<Accounts />} />
+                        <Route path='search' element={<Search />} />
+                        <Route path='management' element={<ManagementPanel />} >
                             <Route path="*" index element={<ManagementDashboard />} />
                             <Route path="subscriptions" element={<Subscriptions />} />
                             <Route path="customer_details" element={<CustomerDetails />} />
@@ -50,13 +50,16 @@ const Router = (props) => {
                             <Route path='purchasing/product/:id' element={<ProductPage />} />
                             <Route path='purchasing/checkout' element={<Checkout />} />
                         </Route>
-                        <Route path='/recurring-transactions' element={<RecurringTransactions />} />
-                        <Route path='/sampling' element={<Transactions
+                        <Route path='recurring-transactions' element={<RecurringTransactions />} />
+                        <Route path='sampling' element={<Sampling
                             setErr={setErr}
                             err={err}
                         />} />
-                        <Route path='/sampling-details' element={<Transactions />} />
+                        <Route path='sampling-details' element={<SamplingDetails />} />
+                        <Route path="*" element={<Home />} /> {/* Basically a catch-all to redirect to currentAudits*/}
+
                     </Route>
+                    <Route path="*" element={<Home />} />
                 </Routes >
             </BrowserRouter>
         </>

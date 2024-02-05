@@ -6,10 +6,7 @@ const defaultAudit = {
             fileSize: ""
         },
         xero: {
-            connectionName: "",
-            connectionId: "",
-            dateStart: "",
-            dateEnd: ""
+            connection: {}
         }
     },
     accounts: [],

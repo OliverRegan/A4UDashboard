@@ -1,37 +1,37 @@
 [
     {
-        "display_name": "Current Audits",
-        "route": "/currentAudits",
+        "display_name": "Current Audit",
+        "route": "dashboard",
         "icon": "bx bx-spreadsheet"
     },
     {
         "display_name": "Select Accounts",
-        "route": "/accounts",
+        "route": "accounts",
         "icon": "bx bx-lock-alt"
     },
     {
         "display_name": "Sampling",
-        "route": "/sampling",
+        "route": "sampling",
         "icon": "bx bx-dollar"
     },
     {
         "display_name": "Sampling Details",
-        "route": "/sampling-details",
+        "route": "sampling-details",
         "icon": "bx bx-detail"
     },
     {
         "display_name": "Search",
-        "route": "/search",
+        "route": "search",
         "icon": "bx bx-search"
     },
     {
         "display_name": "Recurring Transactions",
-        "route": "/recurring-transactions",
+        "route": "recurring-transactions",
         "icon": "bx bx-revision"
     },
     {
         "display_name": "Management",
-        "route": "/management",
+        "route": "management",
         "icon": "bx bx-group"
     }
 ]

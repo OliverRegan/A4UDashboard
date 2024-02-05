@@ -49,18 +49,20 @@ const FileUploader = (props) => {
 
 
     return (
+        <div className="">
+            <FilePond
+                onRemoveFile={() => { props.clear() }}
+                dropOnElement
+                labelInvalidField
+                server={{
+                    process: processFile,
+                }}
+                name="file"
+                labelIdle='<p>Drag & Drop your files or <span class="filepond--label-action">Browse</span><br />Only accepts .xlsx files</p>'
+            />
+        </div>
 
 
-        <FilePond
-            onRemoveFile={() => { props.clear() }}
-            dropOnElement
-            labelInvalidField
-            server={{
-                process: processFile,
-            }}
-            name="file"
-            labelIdle='<p>Drag & Drop your files or <span class="filepond--label-action">Browse</span><br />Only accepts .xlsx files</p>'
-        />
 
 
     )

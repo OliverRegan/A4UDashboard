@@ -1,0 +1,8 @@
+.nav {
+    position: relative;
+    padding-top: 10px;
+    border-radius: -4rem;
+    box-shadow: var(--box-shadow-dark);
+    background-color: var(--main-bg);
+    /* z-index: 1301 !important; */
+}

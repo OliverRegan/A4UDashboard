@@ -17,6 +17,8 @@
     --second-color: #62b4ff;
     --box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
 
+    --main-menu-bg: #667080;
+
     --main-bg-light: #ffffff;
     --second-bg-light: #fafafb;
     --txt-color-light: #455560;
@@ -44,7 +46,7 @@
 
     --sidebar-width: 300px;
     --border-radius: 15px;
-    --topnav-height: 110px;
+    --topnav-height: 80px;
     --transition-cubic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -92,9 +94,14 @@ ul {
 } */
 
 .page-header {
-    margin-bottom: 40px;
+    margin-top: 100px;
     text-transform: capitalize;
     font-size: 2.5em;
+}
+
+.page-header-container {
+    border-bottom: var(--main-menu-bg) solid 3px;
+    margin-bottom: 40px;
 }
 
 .card {

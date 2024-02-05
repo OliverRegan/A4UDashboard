@@ -32,8 +32,9 @@ const XeroImport = (props) => {
     let xeroUrl = process.env.REACT_APP_BACKEND_URL + "/external-integration/xero"
 
     useEffect(() => {
+        console.log(selectedConnection)
         if (selectedConnection) {
-            console.log(selectedConnection)
+
             getXeroData(selectedConnection)
         } else {
             let params = new URLSearchParams(location.search);
@@ -61,8 +62,8 @@ const XeroImport = (props) => {
                     'Content-Type': "application/json"
                 }
             }).then((res) => {
-
-                setConnections(() => res.data)
+                console.log(res)
+                setConnections(() => res.data.connections)
 
             }).catch((err) => {
                 console.log(err)
@@ -106,10 +107,7 @@ const XeroImport = (props) => {
                 // Set audit here
                 props.dispatchAudit(res, {
                     type: 'xero',
-                    data: {
-                        connectionId: connection.id,
-                        connectionName: connection.name
-                    }
+                    data: res.data.connection
                 });
                 // props.setStep(2);
             }).catch((err) => {
@@ -122,18 +120,23 @@ const XeroImport = (props) => {
         <>
             {
                 authorised ?
-                    <div className="flex justify-center">
+                    <div className="">
                         {
                             connections.length === 0 ?
-                                <Loader />
+                                <div className="my-8">
+                                    <Loader />
+
+                                </div>
 
                                 :
                                 selectedConnection ?
                                     <div>
-                                        <div className="my-4">
-                                            Getting General Ledger
+                                        <h3 className="mt-8 text-lg">
+                                            Getting General Ledger...
+                                        </h3>
+                                        <div className="mb-8">
+                                            <Loader />
                                         </div>
-                                        <Loader />
                                     </div>
                                     :
                                     <XeroOrganizations connections={connections} selectedConnection={selectedConnection} setSelectedConnection={setSelectedConnection} />
@@ -141,7 +144,7 @@ const XeroImport = (props) => {
 
                     </div>
                     :
-                    <XeroAuth setAuthorised={setAuthorised} redirectPath={"/currentAudits"} />
+                    <XeroAuth setAuthorised={setAuthorised} redirectPath={"/dashboard"} />
             }
         </>
     )

@@ -15,11 +15,12 @@ import { resetAudit, setAudit } from '../redux/reducers/SaveAudit';
 import 'filepond/dist/filepond.min.css'
 
 import { useMsal } from '@azure/msal-react';
+import PageHeader from '../components/layout/PageHeader/PageHeader';
 import XeroImport from '../components/AuditsPageComponents/upload/XeroImport';
 import AuditDetails from '../components/AuditsPageComponents/auditDetails/AuditDetails';
 import FileUploader from '../components/AuditsPageComponents/upload/FileUploader';
 import StepIndicator from '../components/Shared/StepIndicator/StepIndicator';
-import UploadSelector from '../components/SamplingComponents/UploadSelector/UploadSelector';
+import UploadSelector from '../components/AuditsPageComponents/UploadSelector/UploadSelector';
 import UploadDetails from '../components/AuditsPageComponents/upload/UploadDetails';
 import { useLocation } from 'react-router-dom';
 
@@ -43,26 +44,7 @@ const customStyles = {
     }
 };
 
-// const stepList = [
-//     {
-//         step: 1,
-//         name: "Upload Data"
-//     },
-//     {
-//         step: 2,
-//         name: "Input Details"
-//     },
-//     {
-//         step: 3,
-//         name: "Select Columns"
-//     }
-// ]
-
 const Audits = (props) => {
-
-
-    // const [step, setStep] = useState(1)
-    // const [completedStep, setCompletedStep] = useState()
 
 
     const [modalIsOpen, setIsOpen] = useState(false);
@@ -72,6 +54,7 @@ const Audits = (props) => {
     const [file, setFile] = useState(audit.file)
     const [uploadType, setUploadType] = useState("");
     const [dataImported, setDataImported] = useState(false)
+    const [startNew, setStartNew] = useState(false);
 
     const { instance } = useMsal()
     const profile = instance.getActiveAccount()
@@ -81,7 +64,7 @@ const Audits = (props) => {
     useEffect(() => {
         let params = new URLSearchParams(location.search);
         if (params.get("xeroAuthRedirect") == "true") {
-            setUploadType("xero")
+            setUploadType(() => "xero")
         }
 
         checkDataImported();
@@ -98,11 +81,9 @@ const Audits = (props) => {
         }
 
         let defaultXeroData = {
-            connectionName: "",
-            connectionId: "",
-            dateStart: "",
-            dateEnd: ""
+            connection: {}
         }
+
         console.log(audit.importData.file)
         console.log(audit.importData.xero)
         if (JSON.stringify(audit.importData.file) === JSON.stringify(defaultFileData) && JSON.stringify(audit.importData.xero) === JSON.stringify(defaultXeroData)) {
@@ -136,9 +117,9 @@ const Audits = (props) => {
 
 
     async function handleImportRemoval() {
+
         return await checkRemove() ?
-            dispatch(resetAudit())
-            : ''
+            dispatch(resetAudit()) : ''
     }
 
     async function checkRemove() {
@@ -151,7 +132,7 @@ const Audits = (props) => {
                     resolve(true);
                 } else {
                     setIsOpen(false);
-                    reject(false);
+                    resolve(false);
                 }
             })
         })
@@ -172,20 +153,15 @@ const Audits = (props) => {
             fileSize: ""
         };
         let xeroData = {
-            connectionName: "",
-            connectionId: "",
-            dateStart: "",
-            dateEnd: ""
+            connection: {}
         }
-
         switch (importDetails.type) {
             case "file":
                 fileData.fileName = importDetails.data.fileName
                 fileData.fileSize = importDetails.data.fileSize
                 break;
             case "xero":
-                xeroData.connectionId = importDetails.data.connectionId;
-                xeroData.connectionName = importDetails.data.connectionName;
+                xeroData.connection = importDetails.data
                 break;
             default:
                 console.error("Something went wrong. Invalid upload type.")
@@ -276,96 +252,64 @@ const Audits = (props) => {
 
 
     return (
-        <div>
-            <div className=" h-screen items-center justify-center bg-grey-lighter w-1/2 mx-auto" >
-                {/* <div className="card">
-                    <div className="card__body">
-                        <StepIndicator 
-                        step={step}
-                            setStep={setStep}
-                            stepList={stepList}
-                            setCompletedStep={setCompletedStep}
-                            completedStep={completedStep} />
-                    </div>
-                </div> */}
-                {
-                    !dataImported ?
-                        <div className="card">
-                            <div className="card__body">
-
-
-
-                                <UploadSelector
-                                    setUploadType={setUploadType}
-                                    uploadType={uploadType}
-                                    setDataImported={setDataImported}
-                                />
-
-
-
-                            </div>
-                        </div>
-                        :
-                        <></>
-                }
-
+        <div className=''>
+            <PageHeader title={"Current Audit"} />
+            <div className=" h-screen items-center justify-center w-1/3" >
+                <h2>
+                    Details
+                </h2>
+                <AuditDetails
+                    formik={formik}
+                    audit={audit}
+                    uploads={props.uploads}
+                />
+                <h2 className='text-2xl my-8'>
+                    Data Source
+                </h2>
                 {
                     uploadType != "" && !dataImported ?
 
                         <>
                             {
                                 uploadType === 'file' ?
-                                    <div className="card">
-                                        <div className="card__body">
-                                            <FileUploader
-                                                audit={audit}
-                                                dispatchAudit={dispatchAudit}
-                                                openModal={openModal}
-                                                closeModal={closeModal}
-                                                handleImportRemoval={handleImportRemoval}
-                                                checkRemove={checkRemove}
-                                            // setStep={setStep}
-                                            />
-                                        </div>
-                                    </div>
+                                    <FileUploader
+                                        audit={audit}
+                                        dispatchAudit={dispatchAudit}
+                                        openModal={openModal}
+                                        closeModal={closeModal}
+                                        handleImportRemoval={handleImportRemoval}
+                                        checkRemove={checkRemove}
+                                    // setStep={setStep}
+                                    />
                                     :
                                     <></>
                             }
                             {
                                 uploadType === 'xero' ?
-                                    <div className="card">
-                                        <div className="card__body">
-                                            <XeroImport
-                                                dispatchAudit={dispatchAudit}
-                                            //  setStep={setStep}
-                                            />
-                                        </div>
-                                    </div>
+                                    <XeroImport
+                                        dispatchAudit={dispatchAudit}
+                                    //  setStep={setStep}
+                                    />
                                     :
                                     <></>
                             }
                         </>
 
                         :
-                        <></>
+                        <>
+                        </>
 
 
                 }
                 {
-                    dataImported ?
-                        <div className="card">
-                            <div className="card__body">
-                                <AuditDetails
-                                    formik={formik}
-                                    audit={audit}
-                                    uploads={props.uploads}
-                                // step={step}
-                                // setStep={setStep}
-                                // setCompletedStep={setCompletedStep}
-                                // completedStep={completedStep}
-                                />
-                            </div>
-                        </div>
+                    !dataImported ?
+
+
+                        <UploadSelector
+                            setUploadType={setUploadType}
+                            uploadType={uploadType}
+                            setDataImported={setDataImported}
+                        />
                         :
                         <></>
                 }
@@ -377,12 +321,38 @@ const Audits = (props) => {
                             handleImportRemoval={handleImportRemoval}
                         />
                         :
-                        <></>
+                        <div className='mb-20'>
+                            No Data uploaded
+                        </div>
                 }
+                <Button
+                    onClick={() => {
+                        if (dataImported) {
+                            handleImportRemoval().then(() => {
+                                setStartNew(true)
+                            })
+                        } else {
+                            setStartNew(true)
+                        }
+                    }}
+                    variant='contained'>
+                    Start New Audit
+                </Button>
+                {/* <Button
+                    onClick={() => {
+                        if (dataImported) {
+                            handleImportRemoval().then(() => {
+                                setStartNew(true)
+                            })
+                        } else {
+                            setStartNew(true)
+                        }
+                    }}
+                    variant='contained'>
+                    Select Accounts
+                </Button> */}
 
             </div>
-
-
             <Modal
                 isOpen={modalIsOpen}
                 // onAfterOpen={afterOpenModal}

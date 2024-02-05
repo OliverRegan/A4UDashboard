@@ -24,7 +24,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import columns from "../components/utility/GridDefinitions/TransactionColumns"
 
 import TransactionModal from '../components/transactionModal/TransactionModal';
-import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
+import AccountDetailsBar from '../components/auditDetailsBar/AuditDetailsBar';
 
 import useGetToken from '../components/utility/Auth/useGetToken';
 import { useMsal } from "@azure/msal-react";
@@ -37,6 +37,7 @@ import { setAudit } from '../redux/reducers/SaveAudit';
 
 // Formik for searching
 import { useFormik } from 'formik'
+import PageHeader from '../components/layout/PageHeader/PageHeader';
 
 
 const RecurringTransactions = (props) => {
@@ -253,9 +254,7 @@ const RecurringTransactions = (props) => {
 
     return (
         <div className='ml-5'>
-            <h2 className="page-header">
-                Recurring Transactions
-            </h2>
+            <PageHeader title="Recurring Transactions" />
             {
                 audit.auditDetails.accounts.selectedAccounts.length != 0 ?
                     <AccountDetailsBar />

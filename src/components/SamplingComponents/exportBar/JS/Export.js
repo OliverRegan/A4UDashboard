@@ -1,10 +1,10 @@
 // import auditMapper from "./auditMapper"
 import axios from 'axios';
 
-function Export(audit, type, getToken) {
+function Export(audit, type, getToken, instance) {
     let URL = process.env.REACT_APP_BACKEND_URL + "/export/" + type
     let body = JSON.stringify(audit);
-    getToken.then((jwt) => {
+    getToken(instance).then((jwt) => {
         console.log(audit)
         axios.post(URL, body, {
             headers: {

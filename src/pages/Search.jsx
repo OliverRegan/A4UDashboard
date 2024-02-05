@@ -17,11 +17,12 @@ import dayjs from 'dayjs';
 import Axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 
+import PageHeader from '../components/layout/PageHeader/PageHeader';
 
 // Formik for searching
 import { useFormik } from 'formik'
 import { setAudit } from '../redux/reducers/SaveAudit';
-import AccountDetailsBar from '../components/accountDetailsBar/AccountDetailsBar';
+import AccountDetailsBar from '../components/auditDetailsBar/AuditDetailsBar';
 import useGetToken from '../components/utility/Auth/useGetToken';
 import { useMsal } from "@azure/msal-react";
 
@@ -181,10 +182,7 @@ const Search = (props) => {
 
     return (
         <div className='ml-5'>
-
-            <h2 className="page-header">
-                Search Transactions
-            </h2>
+            <PageHeader title="Search Transactions" />
             {
                 audit.auditDetails.accounts.selectedAccounts.length != 0 ?
                     <AccountDetailsBar />

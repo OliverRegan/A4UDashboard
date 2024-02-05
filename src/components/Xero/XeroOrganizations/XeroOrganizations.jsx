@@ -7,8 +7,11 @@ const XeroOrganizations = (props) => {
     }, [])
 
     return (
-        <div className="">
-            <h4 className="text-center">Please confirm which organization you'd like to use</h4>
+        <div className="mt-8 ">
+            <h2 className="text-2xl mb-8">
+                Xero
+            </h2>
+            <h4 className="">Please confirm which organization you'd like to use</h4>
             <div className="mt-10 mb-3">
                 {
                     props.connections.map((connection) => {
@@ -18,11 +21,10 @@ const XeroOrganizations = (props) => {
                                     + (props.connections.indexOf(connection) === 0 ? " rounded-t-md" : "") + (props.connections.indexOf(connection) === (props.connections.length - 1) ? " rounded-b-md" : "")}
                                     onClick={() => props.setSelectedConnection(connection)}
                                 >
-                                    <div className="p-4 text-center">
+                                    <div className="p-4">
                                         {connection.name}
                                     </div>
                                 </div>
-                                <div className="h-1 bg-gray-300 rounded-xl my-2"></div>
                             </div>
 
 
