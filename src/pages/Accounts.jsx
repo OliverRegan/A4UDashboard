@@ -10,7 +10,7 @@ import { OpenInNew } from '@mui/icons-material';
 
 import { setAudit } from '../redux/reducers/SaveAudit'
 import AuditDetailsBar from '../components/auditDetailsBar/AuditDetailsBar';
-import PageHeader from '../components/layout/PageHeader/PageHeader';
+import PageHeader from '../components/utility/PageHeader/PageHeader';
 
 const Accounts = (props) => {
 
@@ -83,7 +83,8 @@ const Accounts = (props) => {
             populationDb += Math.abs(acc.totalDebit)
         })
 
-        dispatch(setAudit([audit.importData, audit.accounts, {
+        dispatch(setAudit([audit.importData, audit.connectionType,
+        audit.accounts, {
             ...audit.auditDetails,
             accounts: {
                 ...audit.auditDetails.accounts,
@@ -186,7 +187,7 @@ const Accounts = (props) => {
                             variant='contained'
                             component={Link}
                             disabled={audit.auditDetails.accounts.selectedAccounts.length === 0}
-                            to="sampling"
+                            to="/dashboard/sampling"
                             sx={{
                                 width: 1
                             }}
@@ -232,7 +233,8 @@ const Accounts = (props) => {
                                     onSelectionModelChange={(ids) => {
                                         const selectedRowsData = ids.map((id) => audit.accounts.find((row) => row.id === id));
                                         accounts: {
-                                            dispatch(setAudit([audit.importData, audit.accounts, {
+                                            dispatch(setAudit([audit.importData, audit.connectionType,
+                                            audit.accounts, {
                                                 ...audit.auditDetails,
                                                 accounts: {
                                                     ...audit.auditDetails.accounts,

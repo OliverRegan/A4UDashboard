@@ -9,6 +9,7 @@ const defaultAudit = {
             connection: {}
         }
     },
+    connectionType: "",
     accounts: [],
     auditDetails: {
         auditor: {
@@ -85,11 +86,13 @@ export const saveAudit = createSlice({
     reducers: {
         setAudit: (state, action) => {
             state.importData = action.payload[0]
-            state.accounts = action.payload[1]
-            state.auditDetails = action.payload[2]
+            state.connectionType = action.payload[1]
+            state.accounts = action.payload[2]
+            state.auditDetails = action.payload[3]
         },
         resetAudit: (state) => {
             state.importData = defaultAudit.importData
+            state.connectionType = defaultAudit.connectionType
             state.accounts = defaultAudit.accounts
             state.auditDetails = defaultAudit.auditDetails
         }

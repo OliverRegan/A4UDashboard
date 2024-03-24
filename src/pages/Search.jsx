@@ -17,7 +17,7 @@ import dayjs from 'dayjs';
 import Axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 
-import PageHeader from '../components/layout/PageHeader/PageHeader';
+import PageHeader from '../components/utility/PageHeader/PageHeader';
 
 // Formik for searching
 import { useFormik } from 'formik'
@@ -80,7 +80,7 @@ const Search = (props) => {
                             transNew.id = response.data.transactions.indexOf(transaction)
                             searchedTransactions.push(transNew)
                         })
-                        dispatch(setAudit([audit.importData, audit.accounts, {
+                        dispatch(setAudit([audit.importData, audit.connectionType, audit.accounts, {
                             ...audit.auditDetails,
                             search: {
                                 ...audit.auditDetails.search,
@@ -113,12 +113,12 @@ const Search = (props) => {
             let dateString = (date.getUTCDate() + 1) + '/' + (date.getMonth() + 1) + '/' + date.getFullYear()
             formik.setFieldValue('endDate', value)
             formik.setFieldValue('endDateString', dateString)
-            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: value.toString(), endDateString: dateString } }]))
+            dispatch(setAudit([audit.importData, audit.connectionType, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: value.toString(), endDateString: dateString } }]))
             setEndDateErr('');
         } else if (value === null) {
             formik.setFieldValue('endDate', null)
             formik.setFieldValue('endDateString', '')
-            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: null, endDateString: '' } }]))
+            dispatch(setAudit([audit.importData, audit.connectionType, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, endDate: null, endDateString: '' } }]))
             setEndDateErr('');
         } else {
             formik.setFieldValue('endDate', value)
@@ -136,14 +136,14 @@ const Search = (props) => {
             // setStartDateString(dateString)
             formik.setFieldValue('startDate', value)
             formik.setFieldValue('startDateString', dateString)
-            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: value.toString(), startDateString: dateString } }]))
+            dispatch(setAudit([audit.importData, audit.connectionType, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: value.toString(), startDateString: dateString } }]))
             setStartDateErr('');
         } else if (value === null) {
             // setEndDate(value)
             // setEndDateString('')
             formik.setFieldValue('startDate', null)
             formik.setFieldValue('startDateString', '')
-            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: null, startDateString: '' } }]))
+            dispatch(setAudit([audit.importData, audit.connectionType, audit.accounts, { ...audit.auditDetails, search: { ...audit.auditDetails.search, startDate: null, startDateString: '' } }]))
             setStartDateErr('');
         } else {
             formik.setFieldValue('startDate', value)
@@ -158,7 +158,7 @@ const Search = (props) => {
 
     function clear() {
 
-        dispatch(setAudit([audit.importData, audit.accounts, {
+        dispatch(setAudit([audit.importData, audit.connectionType, audit.accounts, {
             ...audit.auditDetails,
             search: {
                 searchedTransactions: [],

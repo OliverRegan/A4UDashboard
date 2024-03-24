@@ -13,7 +13,7 @@ import "../../src/assets/css/excelToJson.css"
 import '../components/topnav/topnav.css';
 // import columns from "../components/utility/GridDefinitions/TransactionColumns"
 import Export from '../components/SamplingComponents/exportBar/Export';
-import PageHeader from '../components/layout/PageHeader/PageHeader';
+import PageHeader from '../components/utility/PageHeader/PageHeader';
 import Loader from '../components/utility/Loader/Loader';
 import SamplingControls from '../components/SamplingComponents/samplingControls/SamplingControls';
 
@@ -29,6 +29,7 @@ const Sampling = (props) => {
     const [isLoading, setIsLoading] = useState(false)
     const [refreshed, setRefreshed] = useState(true)
     const [hasXeroLink, setHasXeroLink] = useState(false)
+    const [error, setError] = useState('')
 
 
     const [columns, setColumns] = useState([
@@ -166,6 +167,7 @@ const Sampling = (props) => {
                             audit={audit}
                             setRefreshed={setRefreshed}
                             setIsLoading={setIsLoading}
+                            setError={setError}
                         />
                     </div>
                     :
@@ -224,7 +226,13 @@ const Sampling = (props) => {
 
                                         {audit.auditDetails.accounts.selectedAccounts.length > 0 ?
                                             <h2 className=' w-3/4 mx-auto'>
-                                                Sampled transactions will appear here, or all transactions will appear here when no criteria is input.
+                                                {
+                                                    error == '' ?
+                                                        'Sampled transactions will appear here, or all transactions will appear here when no criteria is input.'
+                                                        :
+                                                        error
+                                                }
+
                                             </h2>
                                             :
                                             <>

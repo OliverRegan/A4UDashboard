@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { GetCookie } from "../../utility/Cookies/SetGetCookie"
 
 import xeroLogo from "../../../assets/images/Xero/XeroLogo.png"
-import PageHeader from "../../layout/PageHeader/PageHeader"
+import PageHeader from "../../utility/PageHeader/PageHeader"
 import { Folder, FolderOutlined } from "@mui/icons-material"
 
 const UploadSelector = ({ setUploadType, uploadType, setDataImported, dataImported }) => {

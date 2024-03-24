@@ -30,12 +30,11 @@ function getSeedObj(seed) {
 
 
 
-const SamplingControls = ({ audit, clearSamples, setIsLoading, setRefreshed }) => {
+const SamplingControls = ({ audit, clearSamples, setIsLoading, setRefreshed, setError }) => {
     const dispatch = useDispatch()
 
     const { instance } = useMsal()
     const getToken = useGetToken;
-    const [error, setError] = useState('')
 
 
 
@@ -51,7 +50,7 @@ const SamplingControls = ({ audit, clearSamples, setIsLoading, setRefreshed }) =
             setIsLoading(true)
 
             // Add data to redux store for current audit
-            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, sampling: { ...audit.auditDetails.sampling, ...values } }]))
+            dispatch(setAudit([audit.importData, audit.connectionType, audit.accounts, { ...audit.auditDetails, sampling: { ...audit.auditDetails.sampling, ...values } }]))
 
             const transactionsUrl = process.env.REACT_APP_BACKEND_URL + "/audit/transactions"
 
@@ -82,7 +81,8 @@ const SamplingControls = ({ audit, clearSamples, setIsLoading, setRefreshed }) =
                             transactions.push(transNew)
                         })
                         let seedObj = getSeedObj(response.seedCode)
-                        dispatch(setAudit([audit.importData, audit.accounts, {
+                        dispatch(setAudit([audit.importData, audit.connectionType,
+                        audit.accounts, {
                             ...audit.auditDetails,
                             sampling: {
                                 ...audit.auditDetails.sampling,
@@ -98,18 +98,20 @@ const SamplingControls = ({ audit, clearSamples, setIsLoading, setRefreshed }) =
                                 debitSampled: response.debitSampled
                             }
                         }]))
-                        setError('')
-                        setIsLoading(false)
+                        setError(() => '')
+                        setIsLoading(() => false)
 
                     }).catch((error) => {
                         console.log(error)
-                        setError(error)
+                        setError(() => error.message)
+                        setIsLoading(() => false)
                     })
             })
         },
     });
     function clearSamples() {
-        dispatch(setAudit([audit.importData, audit.accounts, {
+        dispatch(setAudit([audit.importData, audit.connectionType,
+        audit.accounts, {
             ...audit.auditDetails,
             sampling: {
                 sampledTransactions: [],

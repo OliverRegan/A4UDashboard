@@ -1,138 +1,123 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { DataGrid, } from '@mui/x-data-grid';
-import { TextField, Button, InputAdornment, Checkbox } from '@mui/material';
-import { OpenInNew } from '@mui/icons-material';
+
+import { setAudit } from '../redux/reducers/SaveAudit';
+import axios from 'axios';
 import "react-datepicker/dist/react-datepicker.css";
 
-
+import useGetToken from '../components/utility/Auth/useGetToken';
+import { useMsal } from "@azure/msal-react";
 import AccountDetailsBar from '../components/auditDetailsBar/AuditDetailsBar';
-
 import "../../src/assets/css/excelToJson.css"
 import '../components/topnav/topnav.css';
 // import columns from "../components/utility/GridDefinitions/TransactionColumns"
 import Export from '../components/SamplingComponents/exportBar/Export';
-import PageHeader from '../components/layout/PageHeader/PageHeader';
+import PageHeader from '../components/utility/PageHeader/PageHeader';
 import Loader from '../components/utility/Loader/Loader';
 import SamplingControls from '../components/SamplingComponents/samplingControls/SamplingControls';
+import SampledTransactionDetail from '../components/sampledTransactionDetail/SampledTransactionDetail';
+import { GetCookie } from '../components/utility/Cookies/SetGetCookie';
+import { ValidateXeroAuth } from '../components/utility/Auth/XeroAuth/XeroAuthHooks';
 
-
-
+import sampleDetails from "../assets/JsonData/SampleDetails.json"
 
 
 const SamplingDetails = (props) => {
     // Revamped stuff
     const audit = useSelector((state) => state.SaveAudit)
-
-
     const [isLoading, setIsLoading] = useState(false)
     const [refreshed, setRefreshed] = useState(true)
+    const { instance } = useMsal()
+    const getToken = useGetToken;
+
+    const dispatch = useDispatch();
 
 
-
-    const columns = [
-        { field: 'accountNum', headerName: 'Type', flex: 1 },
-        { field: 'accountName', headerName: 'Account', flex: 2 },
-        {
-            field: 'externalId',
-            headerName: 'External Id',
-            type: 'string',
-            flex: 2,
-        },
-        {
-            field: 'credit',
-            headerName: 'Credit',
-            type: 'string',
-            flex: 1,
-            valueGetter: (params) => {
-                if (!params.value) {
-                    return params.value;
-                }
-                // Convert the decimal value to a percentage
-                return '$' + parseFloat(params.value).toLocaleString(2);
-            },
-        },
-        {
-            field: 'debit',
-            headerName: 'Debit',
-            type: 'string',
-            flex: 1,
-            valueGetter: (params) => {
-                if (!params.value) {
-                    return params.value;
-                }
-                // Convert the decimal value to a percentage
-                return '$' + parseFloat(params.value).toLocaleString(2);
-            },
-        },
-        {
-            field: 'source',
-            headerName: 'Source',
-            type: 'string',
-            flex: 2,
-        },
-        {
-            field: 'date',
-            headerName: 'Date',
-            type: 'string',
-            flex: 2,
-        },
-        {
-            field: 'description',
-            headerName: 'Description',
-            type: 'string',
-            flex: 3,
-        },
-    ];
-
-    useEffect(() => {
+    useEffect(async () => {
         if (audit.auditDetails.sampling.sampledTransactions.length > 0) {
             console.log(audit)
             if (audit.auditDetails.sampling.sampledTransactions[0].xeroInvoiceId) {
-                columns.push({
 
-                    field: 'xeroInvoiceId',
-                    headerName: '',
-                    sortable: false,
-                    headerAlign: "right",
-                    align: "right",
-                    renderCell: (params) => {
-
-
-                        const api = params.api;
-                        const thisRow = {};
-
-                        api
-                            .getAllColumns()
-                            .filter((c) => c.field !== "__check__" && !!c)
-                            .forEach(
-                                (c) => (thisRow[c.field] = params.getValue(params.id, c.field))
-                            );
-
-                        const isDebit = parseFloat(params.row.debit) > 0
-                        const deepLink = `https://go.xero.com/organisationlogin/default.aspx?shortcode=` +
-                            `${audit.importData.xero.connection.shortcode}&redirecturl=/` +
-                            `${isDebit ? "AccountsReceivable" : "AccountsPayable"}` +
-                            `/View.aspx?invoiceID=${thisRow.xeroInvoiceId}`
-
-                        return (
-                            <div>
-                                <Button onClick={() => {
-                                    console.log(thisRow.xeroInvoiceId)
-                                    window.open(deepLink, "_blank")
-                                }}><OpenInNew /></Button>
-                            </div>
-                        );
+                // TEMP SECTION FOR DEV WITHOUT NETWORK ==================================================
+                console.log(sampleDetails)
+                let newTransactions = []
+                audit.auditDetails.sampling.sampledTransactions.forEach(transaction => {
+                    let newTransaction = {
+                        ...transaction
                     }
+                    newTransaction['details'] = sampleDetails[0]
 
+                    newTransactions.push(newTransaction)
                 })
+                dispatch(setAudit([audit.importData, audit.connectionType,
+                audit.accounts, {
+                    ...audit.auditDetails,
+                    sampling: {
+                        ...audit.auditDetails.sampling,
+                        sampledTransactions: newTransactions,
+
+                    }
+                }]))
+
+
+
+                // ====================================================================================================
+
+                // const detailsUrl = process.env.REACT_APP_BACKEND_URL + "/audit/detailed-transactions"
+
+                // const body = await createSamplingDetailsRequestBody();
+                // console.log(body)
+                // getToken(instance).then((jwt) => {
+
+                //     axios.post(detailsUrl, body, {
+                //         headers: {
+                //             "Content-type": "application/json",
+                //             'Authorization': `Bearer ${jwt}`
+                //         }
+                //     }).then((res) => {
+                //         console.log(res)
+                //     })
+                // })
+
             }
 
         }
     }, [audit.accounts.selectedAccounts, refreshed])
 
+    const createSamplingDetailsRequestBody = async () => {
+        let body = {
+            transactions: audit.auditDetails.sampling.sampledTransactions
+        }
+        console.log(audit)
+        switch (audit.connectionType) {
+            case 'xero':
+                return await getExternalIntegrationRequest(body, 'xero');
+            case 'file':
+                return body; // adjust this if needed
+            default:
+                return body;
+        }
+    }
 
+    const getExternalIntegrationRequest = async (body, type) => {
+
+        if (type == 'xero') {
+
+            const token = ValidateXeroAuth(GetCookie('XeroAuth'))
+
+            const newBody = {
+                ...body,
+                externalRequest: {
+                    token: await token,
+                    connection: audit.importData.xero.connection
+                }
+            }
+            console.log(newBody)
+
+            return newBody;
+        }
+
+    }
 
 
     return (
@@ -140,27 +125,8 @@ const SamplingDetails = (props) => {
             <div className=''>
                 <PageHeader
                     title={"Sampling Details"}
-                // dropdownContent={<Export />}
                 />
             </div>
-
-            {/* <div className='flex'>
-                <div className={`w-[100%] w-lg-1/2 min-h-full`}>
-                    <AccountDetailsBar />
-                </div>
-                {audit.auditDetails.accounts.selectedAccounts.length != 0 && refreshed ?
-                    <div className='w-1/2 h-full'>
-
-                        <SamplingControls
-                            audit={audit}
-                            setRefreshed={setRefreshed}
-                            setIsLoading={setIsLoading}
-                        />
-                    </div>
-                    :
-                    <></>
-                }
-            </div> */}
 
             <div className="row justify-center">
                 <div className="col-12 row">
@@ -170,7 +136,7 @@ const SamplingDetails = (props) => {
                             :
                             <>
 
-                                {/* {audit.auditDetails.sampling.sampledTransactions.length != 0 ?
+                                {audit.auditDetails.sampling.sampledTransactions.length != 0 ?
                                     <div>
                                         <div className='flex justify-around mb-10'>
                                             {
@@ -200,50 +166,44 @@ const SamplingDetails = (props) => {
                                             }
                                         </div>
                                         <div className='w-100'>
-                                            <DataGrid
+                                            {
+                                                audit.auditDetails.sampling.sampledTransactions.length > 0 ?
+                                                    <div>
+                                                        {
+                                                            audit.auditDetails.sampling.sampledTransactions.map((transaction) => {
+                                                                console.log(transaction)
+                                                                return (
+                                                                    <div>
+                                                                        <SampledTransactionDetail
+                                                                            transaction={transaction}
+
+                                                                        />
+                                                                    </div>
+                                                                )
+
+                                                            })
+                                                        }
+                                                    </div>
+                                                    :
+                                                    <></>
+                                            }
+                                            {/* <DataGrid
                                                 rows={audit.auditDetails.sampling.sampledTransactions}
                                                 columns={columns}
                                                 autoHeight={true}
 
                                                 pageSize={100}
-                                            />
+                                            /> */}
                                         </div>
-                                    </div> */}
+                                    </div>
 
-                                {/* <div className='my-20 text-center'>
-
-                                    {audit.auditDetails.accounts.selectedAccounts.length > 0 ?
-                                        <h2 className=' w-3/4 mx-auto'>
-                                            Sampled transactions will appear here, or all transactions will appear here when no criteria is input.
-                                        </h2>
-                                        :
-                                        <>
-                                            <h2 className=' w-3/4 mx-auto'>Transaction sampling will be available after an audit has been uploaded and accounts have been selected.</h2>
-                                            <Button
-                                                component={Link}
-                                                to="/accounts"
-                                                variant="contained"
-                                                color='success'
-                                                sx={{
-                                                    width: 0.25,
-                                                    mx: 'auto',
-                                                    mt: "2rem",
-                                                    "&:hover": {
-                                                        color: "#fff"
-                                                    }
-                                                }}>Select Accounts</Button>
-                                        </>
-                                    }
-
-
-
-                                </div> */}
-
+                                    :
+                                    <></>
+                                }
                             </>
                         }
                     </div>
                 </div>
-                {/* </div> */}
             </div>
         </div>
     )

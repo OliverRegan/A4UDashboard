@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAudit } from "../../../redux/reducers/SaveAudit";
 import axios from "axios";
 
-import XeroAuth from "../../Xero/XeroAuth/XeroAuth"
+import XeroAuth from "../../utility/Auth/XeroAuth/XeroAuth"
 import useGetToken from '../../utility/Auth/useGetToken';
 import { GetCookie } from "../../utility/Cookies/SetGetCookie";
 import XeroOrganizations from "../../Xero/XeroOrganizations/XeroOrganizations";
@@ -37,23 +37,24 @@ const XeroImport = (props) => {
 
             getXeroData(selectedConnection)
         } else {
-            let params = new URLSearchParams(location.search);
-            if (params.get("xeroAuthRedirect") == "true" && authorised) {
-                // Get and display connection options
-                getXeroConnections();
-
+            const xeroCookie = JSON.parse(GetCookie('XeroAuth'));
+            console.log(xeroCookie)
+            console.log(new Date().getTime())
+            if (authorised && xeroCookie.expiry_timestamp > new Date().getTime()) {
+                getXeroConnections(xeroCookie);
+            } else {
+                // Try and refresh token if not reinitiate flow - needs its own component for reuse
             }
         }
 
     }, [authorised, selectedConnection])
 
-    function getXeroConnections() {
+    function getXeroConnections(xeroCookie) {
 
-        let token = JSON.parse(GetCookie("XeroAuth"))
         let body = {
-            "token": token.access_token
+            "token": xeroCookie.access_token
         }
-        console.log(token.access_token)
+        console.log(xeroCookie.access_token)
 
         getToken.then((jwt) => {
             axios.post((xeroUrl + "/connections"), body, {
@@ -79,22 +80,7 @@ const XeroImport = (props) => {
             "token": token.access_token,
             "connection": connection
         }
-        // dispatch(setAudit([
-        //     {
-        //         file: {
-        //             fileName: "",
-        //             fileSize: ""
-        //         },
-        //         xero: {
-        //             connectionName: connection.name,
-        //             connectionId: connection.id,
-        //             dateStart: "",
-        //             dateEnd: ""
-        //         }
-        //     },
-        //     audit.accounts,
-        //     audit.auditDetails
-        // ]))
+
         // use connection to go and get general ledger reconstruction from back end
         getToken.then((jwt) => {
             axios.post((xeroUrl + "/general-ledger"), body, {

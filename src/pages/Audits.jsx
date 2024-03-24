@@ -15,7 +15,7 @@ import { resetAudit, setAudit } from '../redux/reducers/SaveAudit';
 import 'filepond/dist/filepond.min.css'
 
 import { useMsal } from '@azure/msal-react';
-import PageHeader from '../components/layout/PageHeader/PageHeader';
+import PageHeader from '../components/utility/PageHeader/PageHeader';
 import XeroImport from '../components/AuditsPageComponents/upload/XeroImport';
 import AuditDetails from '../components/AuditsPageComponents/auditDetails/AuditDetails';
 import FileUploader from '../components/AuditsPageComponents/upload/FileUploader';
@@ -102,7 +102,7 @@ const Audits = (props) => {
         },
         onSubmit: values => {
             // Add data to redux store for current audit
-            dispatch(setAudit([audit.importData, audit.accounts, { ...audit.auditDetails, ...values }]))
+            dispatch(setAudit([audit.importData, audit.connectionType, audit.accounts, { ...audit.auditDetails, ...values }]))
         },
     });
 
@@ -173,6 +173,7 @@ const Audits = (props) => {
                 file: fileData,
                 xero: xeroData
             },
+            audit.connectionType,
             accounts, {
                 auditName: "",
                 clientName: "",
@@ -254,7 +255,7 @@ const Audits = (props) => {
     return (
         <div className=''>
             <PageHeader title={"Current Audit"} />
-            <div className=" h-screen items-center justify-center w-1/3" >
+            <div className=" h-screen items-center justify-center xl:w-1/3 lg:w-1/2 w-full" >
                 <h2>
                     Details
                 </h2>

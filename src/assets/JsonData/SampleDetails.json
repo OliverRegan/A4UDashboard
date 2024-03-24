@@ -1,0 +1,315 @@
+[
+    {
+        "invoiceId": "4fad1af2-b871-4ac5-a15a-3c5e32d2e2c4",
+        "transactionLineItemItemIds": [
+            {
+                "Description": "Sales transaction",
+                "AccountCode": "200",
+                "Id": "Examply GUID here",
+                "AccountId": "Another example GUID here",
+                "Amount": 2000,
+                "TaxAmount": 300,
+                "Quantity": 2
+            }
+        ],
+        "type": "ACCREC",
+        "invoiceNumber": "ORC1003",
+        "amountPaid": 0,
+        "amountDue": 0,
+        "amountCredited": 550,
+        "payments": [],
+        "credits": [
+            {
+                "creditId": "371cd138-1e5c-4ec1-a8c6-a1c10e8bdab1",
+                "creditDate": "4/11/2023 12:00:00 am",
+                "creditNoteNumber": "CR1003",
+                "creditLineItemIds": [],
+                "creditAppliedAmount": 550,
+                "creditTotal": 550
+            }
+        ],
+        "contact": {
+            "contactId": "1b2be6e9-8d58-4da9-aaf8-4fe5471b653c",
+            "name": "Hamilton Smith Pty"
+        },
+        "attachments": [
+            {
+                "AttachmentID": "fb4aee41-6db4-4c5b-bab1-978067084d04",
+                "FileName": "Chart.jpeg",
+                "Url": "https://api.xero.com/api.xro/2.0/Invoices/5aa9451d-95d1-4f95-a966-bbab2573f71c/Attachments/Chart.jpeg",
+                "MimeType": "image/jpeg",
+                "ContentLength": 62404
+            }
+        ],
+        "issueDate": "26/10/2023 12:00:00 am",
+        "dueDate": "4/11/2023 12:00:00 am",
+        "invoiceStatus": "PAID",
+        "subTotal": 500,
+        "totalTax": 50,
+        "total": 550,
+        "currencyCode": "AUD",
+        "fullyPaidOnDate": "4/11/2023 12:00:00 am"
+    },
+    {
+        "invoiceId": "7be9956d-5316-4f6b-a66a-d355b3f159b2",
+        "transactionLineItemItemIds": [
+            {
+                "Description": "Sales transaction",
+                "AccountCode": "200",
+                "Id": "Examply GUID here",
+                "AccountId": "Another example GUID here",
+                "Amount": 2000,
+                "TaxAmount": 300,
+                "Quantity": 2
+            }
+        ],
+        "type": "ACCREC",
+        "invoiceNumber": "ORC1007",
+        "amountPaid": 6160,
+        "amountDue": 0,
+        "amountCredited": 0,
+        "payments": [
+            {
+                "paymentId": "f346e968-4b38-4a8b-89f0-21449e7d6751",
+                "paymentDate": "25/11/2023 12:00:00 am",
+                "paymentDetails": null,
+                "paymentReference": "",
+                "paymentAmount": 6160
+            }
+        ],
+        "credits": [],
+        "contact": {
+            "contactId": "9d12a994-9640-4b75-95cc-3de1e9d0ef09",
+            "name": "Petrie McLoud Watson & Associates"
+        },
+        "attachments": [],
+        "issueDate": "14/11/2023 12:00:00 am",
+        "dueDate": "25/11/2023 12:00:00 am",
+        "invoiceStatus": "PAID",
+        "subTotal": 5600,
+        "totalTax": 560,
+        "total": 6160,
+        "currencyCode": "AUD",
+        "fullyPaidOnDate": "25/11/2023 12:00:00 am"
+    },
+    {
+        "invoiceId": "aa0173af-8707-4e7f-8dde-4c7a357bd312",
+        "transactionLineItemItemIds": [
+            {
+                "Description": "Sales transaction",
+                "AccountCode": "200",
+                "Id": "Examply GUID here",
+                "AccountId": "Another example GUID here",
+                "Amount": 2000,
+                "TaxAmount": 300,
+                "Quantity": 2
+            }
+        ],
+        "type": "ACCREC",
+        "invoiceNumber": "ORC1014",
+        "amountPaid": 4235,
+        "amountDue": 0,
+        "amountCredited": 385,
+        "payments": [
+            {
+                "paymentId": "2c6ce9e5-8987-41fe-b642-96846ff44089",
+                "paymentDate": "15/12/2023 12:00:00 am",
+                "paymentDetails": null,
+                "paymentReference": "Part 1",
+                "paymentAmount": 2500
+            },
+            {
+                "paymentId": "678a497f-9cc2-411e-a480-57d94c5fd4c4",
+                "paymentDate": "26/12/2023 12:00:00 am",
+                "paymentDetails": null,
+                "paymentReference": "",
+                "paymentAmount": 1735
+            }
+        ],
+        "credits": [
+            {
+                "creditId": "482c018b-d329-4e05-9b4f-7a4cfc695aa0",
+                "creditDate": "15/12/2023 12:00:00 am",
+                "creditNoteNumber": "CR1014",
+                "creditLineItemIds": [],
+                "creditAppliedAmount": 227.27,
+                "creditTotal": 385
+            },
+            {
+                "creditId": "482c018b-d329-4e05-9b4f-7a4cfc695aa0",
+                "creditDate": "26/12/2023 12:00:00 am",
+                "creditNoteNumber": "CR1014",
+                "creditLineItemIds": [],
+                "creditAppliedAmount": 157.73,
+                "creditTotal": 385
+            }
+        ],
+        "contact": {
+            "contactId": "ef6f54c1-eb45-4956-b8cd-1be82ad665f2",
+            "name": "Maddox Publishing Group"
+        },
+        "attachments": [
+            {
+                "AttachmentID": "fb4aee41-6db4-4c5b-bab1-978067084d04",
+                "FileName": "Chart.jpeg",
+                "Url": "https://api.xero.com/api.xro/2.0/Invoices/5aa9451d-95d1-4f95-a966-bbab2573f71c/Attachments/Chart.jpeg",
+                "MimeType": "image/jpeg",
+                "ContentLength": 62404
+            }
+        ],
+        "issueDate": "5/12/2023 12:00:00 am",
+        "dueDate": "15/12/2023 12:00:00 am",
+        "invoiceStatus": "PAID",
+        "subTotal": 4200,
+        "totalTax": 420,
+        "total": 4620,
+        "currencyCode": "AUD",
+        "fullyPaidOnDate": "26/12/2023 12:00:00 am"
+    },
+    {
+        "invoiceId": "ab63738a-370a-43a5-bfa3-620d684e66d0",
+        "transactionLineItemItemIds": [
+            {
+                "Description": "Sales transaction",
+                "AccountCode": "200",
+                "Id": "Examply GUID here",
+                "AccountId": "Another example GUID here",
+                "Amount": 2000,
+                "TaxAmount": 300,
+                "Quantity": 2
+            }
+        ],
+        "type": "ACCREC",
+        "invoiceNumber": "ORC1029",
+        "amountPaid": 0,
+        "amountDue": 550,
+        "amountCredited": 0,
+        "payments": [],
+        "credits": [],
+        "contact": {
+            "contactId": "755f1475-d255-43a8-bedc-5ea7fd26c71f",
+            "name": "Yarra Transport"
+        },
+        "attachments": [],
+        "issueDate": "25/1/2024 12:00:00 am",
+        "dueDate": "9/2/2024 12:00:00 am",
+        "invoiceStatus": "DRAFT",
+        "subTotal": 500,
+        "totalTax": 50,
+        "total": 550,
+        "currencyCode": "AUD",
+        "fullyPaidOnDate": "1/1/0001 12:00:00 am"
+    },
+    {
+        "invoiceId": "86d6e00f-ef56-49f7-9a54-796ccd5ca057",
+        "transactionLineItemItemIds": [
+            {
+                "Description": "Sales transaction",
+                "AccountCode": "200",
+                "Id": "Examply GUID here",
+                "AccountId": "Another example GUID here",
+                "Amount": 2000,
+                "TaxAmount": 300,
+                "Quantity": 2
+            }
+        ],
+        "type": "ACCREC",
+        "invoiceNumber": "ORC1034",
+        "amountPaid": 0,
+        "amountDue": 3080,
+        "amountCredited": 0,
+        "payments": [],
+        "credits": [],
+        "contact": {
+            "contactId": "ad24c33b-256b-4157-ad56-cbcf0e8db7b1",
+            "name": "Pinnacle Management"
+        },
+        "attachments": [],
+        "issueDate": "15/1/2024 12:00:00 am",
+        "dueDate": "4/2/2024 12:00:00 am",
+        "invoiceStatus": "AUTHORISED",
+        "subTotal": 2800,
+        "totalTax": 280,
+        "total": 3080,
+        "currencyCode": "AUD",
+        "fullyPaidOnDate": "1/1/0001 12:00:00 am"
+    },
+    {
+        "invoiceId": "7e862d93-8dab-4856-8b0c-d844e09d750f",
+        "transactionLineItemItemIds": [
+            "300"
+        ],
+        "type": "ACCPAY",
+        "invoiceNumber": "GB1-White",
+        "amountPaid": 0,
+        "amountDue": 840,
+        "amountCredited": 0,
+        "payments": [],
+        "credits": [],
+        "contact": {
+            "contactId": "e8e9a2c2-3e7e-48ed-8528-c3d61b28f276",
+            "name": "Bayside Wholesale"
+        },
+        "attachments": [],
+        "issueDate": "25/1/2024 12:00:00 am",
+        "dueDate": "9/2/2024 12:00:00 am",
+        "invoiceStatus": "AUTHORISED",
+        "subTotal": 763.64,
+        "totalTax": 76.36,
+        "total": 840,
+        "currencyCode": "AUD",
+        "fullyPaidOnDate": "1/1/0001 12:00:00 am"
+    },
+    {
+        "invoiceId": "76bcb361-f93b-4513-b312-5a4af306d276",
+        "transactionLineItemItemIds": [
+            "400"
+        ],
+        "type": "ACCPAY",
+        "invoiceNumber": "SM0195-70135",
+        "amountPaid": 0,
+        "amountDue": 2000,
+        "amountCredited": 0,
+        "payments": [],
+        "credits": [],
+        "contact": {
+            "contactId": "8a154a19-6c6c-404b-bbc9-6deae2d18251",
+            "name": "SMART Agency"
+        },
+        "attachments": [],
+        "issueDate": "15/12/2023 12:00:00 am",
+        "dueDate": "29/12/2023 12:00:00 am",
+        "invoiceStatus": "AUTHORISED",
+        "subTotal": 1818.18,
+        "totalTax": 181.82,
+        "total": 2000,
+        "currencyCode": "AUD",
+        "fullyPaidOnDate": "1/1/0001 12:00:00 am"
+    },
+    {
+        "invoiceId": "54585f46-c1a0-4432-bd4f-c1fae2fba59b",
+        "transactionLineItemItemIds": [
+            "400"
+        ],
+        "type": "ACCPAY",
+        "invoiceNumber": "SM0210-70209",
+        "amountPaid": 0,
+        "amountDue": 2500,
+        "amountCredited": 0,
+        "payments": [],
+        "credits": [],
+        "contact": {
+            "contactId": "8a154a19-6c6c-404b-bbc9-6deae2d18251",
+            "name": "SMART Agency"
+        },
+        "attachments": [],
+        "issueDate": "15/1/2024 12:00:00 am",
+        "dueDate": "28/1/2024 12:00:00 am",
+        "invoiceStatus": "AUTHORISED",
+        "subTotal": 2272.73,
+        "totalTax": 227.27,
+        "total": 2500,
+        "currencyCode": "AUD",
+        "fullyPaidOnDate": "1/1/0001 12:00:00 am"
+    }
+]

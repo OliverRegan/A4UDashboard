@@ -5,13 +5,15 @@ export const SetCookie = (cookieName, cookieValue, expiryInDays, path) => {
 
         date.setTime(date.getTime() + (expiryInDays * 24 * 60 * 60 * 1000)); // current time + days in ms
         console.log(date)
-        const expireString = "expires=" + date.toString();
-        const pathString = path === "" ? "/" : path
-        console.log(expireString)
+        console.log(date.getTime().toString())
+        // const expireString = "expires=" + date.toString();
+        const pathString = "*"
+        // console.log(expireString)
         console.log(pathString)
         console.log(cookieValue)
         console.log(cookieName)
-        document.cookie = `${cookieName}=${cookieValue};${expireString};path=${pathString}`
+        document.cookie = cookieName + '=; Path=*; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        document.cookie = `${cookieName}=${cookieValue};expires=${date.getTime().toString()};path=*`
 
         return true;
     }
